@@ -1,4 +1,3 @@
-from email import message
 from tensorflow.keras.utils import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.optimizers import SGD
@@ -17,7 +16,7 @@ import json
 import os
 from unittest import result
 
-from src.load.DB import get_db,DBCollections
+from src.load.database import get_db,DBCollections
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # tensorflow tags
@@ -156,125 +155,126 @@ class TatuIA:
 
 
 
-def main():
-    database = {
-        "intents": [
-            {
-                "tag": "welcome",
-                "patterns": [],
-                "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Salve, qual foi ?", "Manda pro pai, Lança a braba", "No que posso te ajudar ?"],
-                "context": [""]
-            },
-            {
-                "tag": "myclasses",
-                "patterns": [],
-                "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
-                "context": [""]
-            },
-            {
-                "tag": "businfo",
-                "patterns": [],
-                "responses": ["Esses são os horários dos fretados","Horarios dos fretados: ", "Ah, você quer saber o horário dos fretados"],
-                "context": [""]
-            },
-            {
-                "tag": "discinfo",
-                "patterns": [],
-                "responses": ['Informações da disciplina X','Para a disciplina Y, as informações são as seguintes: '],
-                "context": [""]
-            },
-            {
-                "tag": "ru",
-                "patterns": [],
-                "responses": ['O cárdapio de hoje é esse:','Para o almoço temos:', 'Para o jantar teremos:'], # provisório
-                "context": [""]
-            },
-            {
-                "tag": "anything_else",
-                "patterns": [],
-                "responses": ["Desculpa, não entendi o que você falou, tente novamente!","Não compreendi a sua solicitação, talvez eu possa te ajudar", "Por favor, digite novamente"],
-                "context": [""]
-            }
-        ]
+
+database = {
+    "intents": [
+        {
+            "tag": "welcome",
+            "patterns": [],
+            "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Salve, qual foi ?", "Manda pro pai, Lança a braba", "No que posso te ajudar ?"],
+            "context": [""]
+        },
+        {
+            "tag": "myclasses",
+            "patterns": [],
+            "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
+            "context": [""]
+        },
+        {
+            "tag": "businfo",
+            "patterns": [],
+            "responses": ["Esses são os horários dos fretados","Horarios dos fretados: ", "Ah, você quer saber o horário dos fretados"],
+            "context": [""]
+        },
+        {
+            "tag": "discinfo",
+            "patterns": [],
+            "responses": ['Informações da disciplina X','Para a disciplina Y, as informações são as seguintes: '],
+            "context": [""]
+        },
+        {
+            "tag": "ru",
+            "patterns": [],
+            "responses": ['O cárdapio de hoje é esse:','Para o almoço temos:', 'Para o jantar teremos:'], # provisório
+            "context": [""]
+        },
+        {
+            "tag": "anything_else",
+            "patterns": [],
+            "responses": ["Desculpa, não entendi o que você falou, tente novamente!","Não compreendi a sua solicitação, talvez eu possa te ajudar", "Por favor, digite novamente"],
+            "context": [""]
         }
+    ]
+    }
 
 
-    database = gerador.fill_database(database,50)
-    # demo da funcionalide da classe utils para mensagem
-    message_utils = MessageUtils()
-    message_utils.process_training_data(database,None)
+database = gerador.fill_database(database,50)
+# demo da funcionalide da classe utils para mensagem
+message_utils = MessageUtils()
+message_utils.process_training_data(database,None)
 
-    tatu_zap = TatuIA("", message_utils=message_utils,lstm=False)
-  
-    #tatu_zap.print_model()
+tatu_zap = TatuIA("", message_utils=message_utils,lstm=False)
 
-    #tatu_zap.eval_model()
-    
-    turmas_por_ra_collection = get_db[DBCollections.TURMAS_POR_RA]
+#tatu_zap.print_model()
 
-    def turmas(RA):
-        QUERY = {"RA": str(RA)}
-        result = list(turmas_por_ra_collection.find(QUERY))
-        lista = result[0]["TURMAS"]
-        for res in lista:del res['_id']
-        lista_clean = [dict(item) for item in {tuple(dict.items()) for dict in lista}]
-        for disciplina in lista_clean:
-            teoria = disciplina['HORÁRIO TEORIA']
-            pratica = disciplina['HORÁRIO PRÁTICA']
-            nome = disciplina['DISCIPLINA - TURMA']
+#tatu_zap.eval_model()
 
-            if teoria == 0:
-                print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) 
-            if pratica == 0:
-                print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
-        return lista_clean
+turmas_por_ra_collection = get_db[DBCollections.TURMAS_POR_RA]
 
+def turmas(RA):
+    QUERY = {"RA": str(RA)}
+    string = ""
+    result = list(turmas_por_ra_collection.find(QUERY))
+    lista = result[0]["TURMAS"]
+    for res in lista:del res['_id']
+    lista_clean = [dict(item) for item in {tuple(dict.items()) for dict in lista}]
+    for disciplina in lista_clean:
+        teoria = disciplina['HORÁRIO TEORIA']
+        pratica = disciplina['HORÁRIO PRÁTICA']
+        nome = disciplina['DISCIPLINA - TURMA']
 
-
-    print(">>> Demo da funcionalidade de reconhecimento de intenção do TatuBot.")
-    print(">>> Inicialmente a I.A foi treinada com cinco intenções (welcome,myclasses,businfo,discinfo,ru).")
-    print(">>> Envie uma mensagem para o TatuBot!")
-    while True:
-        try:
-            user_message = input("user: ")
-            response, intent = tatu_zap.get_reply(user_message)
-            if intent == "myclasses":
-                user_ra = tatu_zap.message_utils.is_ra(user_message)
-                if user_ra:
-                    turmas(user_ra)
-                else:
-                    while True:
-                        print("Tatu: Você solicitou informações sobre suas turmas, agora insira seu ra!")
-                        expected_ra = input('user: ')
-                        user_ra = tatu_zap.message_utils.is_ra(expected_ra)
-                        if user_ra:
-                            #print("Tatu: Já estou processando as turmas para o ra {}.".format(user_ra))
-                            turmas(user_ra)
-                            break
-            elif intent == "businfo":
-                user_localtime =  tatu_zap.message_utils.check_origin(user_message)
-                while True:
-                    if user_localtime:
-                        print("Tatu: Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
-                        break
-                    else :
-                        print("Tatu: Por favor, para conseguirmos identificar qual fretado você quer, diga de onde você quer ir (de SA / de SBC) para onde (para SA/ para SBC)")
-                        expected_local = input('user: ')
-                        user_localtime =  tatu_zap.message_utils.check_origin(expected_local)
-                        
-            elif intent == "discinfo": #TODO
-                print("Tatu: Digite apenas o nome da matéria (ou sigla) que você deseja! ")
-                expected_disc = input()
-                print("Tatu: Estou buscando a ementa da disciplina {}.".format(expected_disc))
-
-            else:
-                print("Tatu: {}.".format(response)) 
-
-        except KeyboardInterrupt:
-            break
+        if teoria == 0:
+            string += 'Disciplina: {}, Horário Prática: {}\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) 
+        if pratica == 0:
+            string += 'Disciplina: {}, Horário Teoria: {}\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
+    return string
 
 
 
-if __name__ == "__main__":
-    main()
+# print(">>> Demo da funcionalidade de reconhecimento de intenção do TatuBot.")
+# print(">>> Inicialmente a I.A foi treinada com cinco intenções (welcome,myclasses,businfo,discinfo,ru).")
+# print(">>> Envie uma mensagem para o TatuBot!")
+# while True:
+#     try:
+#         user_message = input("user: ")
+#         response, intent = tatu_zap.get_reply(user_message)
+#         if intent == "myclasses":
+#             user_ra = tatu_zap.message_utils.is_ra(user_message)
+#             if user_ra:
+#                 turmas(user_ra)
+#             else:
+#                 while True:
+#                     print("Tatu: Você solicitou informações sobre suas turmas, agora insira seu ra!")
+#                     expected_ra = input('user: ')
+#                     user_ra = tatu_zap.message_utils.is_ra(expected_ra)
+#                     if user_ra:
+#                         #print("Tatu: Já estou processando as turmas para o ra {}.".format(user_ra))
+#                         turmas(user_ra)
+#                         break
+#         elif intent == "businfo":
+#             user_localtime =  tatu_zap.message_utils.check_origin(user_message)
+#             while True:
+#                 if user_localtime:
+#                     print("Tatu: Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
+#                     break
+#                 else :
+#                     print("Tatu: Por favor, para conseguirmos identificar qual fretado você quer, diga de onde você quer ir (de SA / de SBC) para onde (para SA/ para SBC)")
+#                     expected_local = input('user: ')
+#                     user_localtime =  tatu_zap.message_utils.check_origin(expected_local)
+                    
+#         elif intent == "discinfo": #TODO
+#             print("Tatu: Digite apenas o nome da matéria (ou sigla) que você deseja! ")
+#             expected_disc = input()
+#             print("Tatu: Estou buscando a ementa da disciplina {}.".format(expected_disc))
+
+#         else:
+#             print("Tatu: {}.".format(response)) 
+
+#     except KeyboardInterrupt:
+#         break
+
+
+
+# if __name__ == "__main__":
+#     main()
 

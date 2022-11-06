@@ -1,4 +1,4 @@
-from load.DB import get_db,DBCollections
+from src.load.database import get_db,DBCollections
 
 turmas_por_ra_collection = get_db[DBCollections.TURMAS_POR_RA]
 
