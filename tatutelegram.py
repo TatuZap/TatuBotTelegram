@@ -57,12 +57,12 @@ def responder(mensagem):
             #     user_localtime =  tatuia.tatu_zap.message_utils.check_origin(expected_local)
                     
     elif intent == "discinfo": #TODO
-        apelido_matéria =  'MCZA031-13'
-        response = list(catalogo_model.find_by_sigla(apelido_matéria))
+        apelido_matéria =  'fq'
+        response = list(catalogo_model.find_by_apelido(apelido_matéria))
         #response = list(catalogo_model.list_all())
         print('response: ', response)
-        saida = response[0]
-        resposta = "Disciplina: {}, TPI: {}, sigla: {}, recomendacoes: {}".format(saida['disciplina'],saida['TPI'],saida['sigla'],saida['recomendacoes'])
+        saida = response[1]
+        resposta = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(saida['disciplina'],saida['TPI'],saida['sigla'],saida['recomendacoes'],saida['ementa'])
         #response = dumps(response)
         #bot.send_message(mensagem.chat.id, "Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
         bot.send_message(mensagem.chat.id, resposta)
