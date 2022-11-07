@@ -18,7 +18,7 @@ def find_by_apelido(apelido):
         Função que retorna informações acerca da disciplina atravez do apelido
     """
     try:
-        response = _get_collection().find_one({ "apelido": apelido })
+        response = _get_collection().find({ "apelido": apelido })
         if response:
             return response
     except Exception as e:
@@ -29,7 +29,7 @@ def find_by_sigla(sigla):
         Função que retorna informações acerca da disciplina atravez da sigla
     """
     try:
-        response = _get_collection().find_one({ "sigla": sigla })
+        response = _get_collection().find({ "sigla": sigla })
         if response:
             return response
     except Exception as e:
