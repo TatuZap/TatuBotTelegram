@@ -45,7 +45,7 @@ def fill_database(database, n):
         if intent["tag"] == 'discinfo':
             list_disc1 = ['quero', 'desejo', 'pretendo', 'necessito', 'preciso', 'procuro']+['']*5
             list_disc2 = ['saber', 'entender', 'me informar', 'conhecer']+['']*3
-            list_disc3 = ['ementa','plano de ensino','requisitos', 'bibliografia', 'disciplina']
+            list_disc3 = ['ementa','plano de ensino','requisitos', 'bibliografia', 'disciplina','informacoes']
             list_disc4 = ['da disciplina','da matéria','da cadeira','do curso','disciplina']+['']*4
 
             for i in range(n):

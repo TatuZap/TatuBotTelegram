@@ -175,6 +175,9 @@ class MessageUtils:
         return None if valid_ra == [] else valid_ra[0]
 
         
+    '''
+        check_origin: dada uma mensagem, determina qual a origem (sa ou sbc) e qual a origem (sa ou sbc)
+    '''
 
     def check_origin(self, message):
         lista = [] # Origen, Destino, Hora,Minuto
