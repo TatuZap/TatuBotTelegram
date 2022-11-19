@@ -215,6 +215,7 @@ def turmas(RA):
     QUERY = {"RA": str(RA)}
     string = ""
     result = list(turmas_por_ra_collection.find(QUERY))
+    if result == []: return 'RA não encontrado, tente novamente'
     lista = result[0]["TURMAS"]
     for res in lista:del res['_id']
     lista_clean = [dict(item) for item in {tuple(dict.items()) for dict in lista}]
