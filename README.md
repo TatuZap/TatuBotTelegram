@@ -6,7 +6,7 @@ O MVP do TatuZap consiste de dois repositórios, o ETLTatuZap, reponsável por c
 
 <hr />
 
-## BotTatuZap
+## TatuBotTelegram
 
 
 Os códigos presentes neste repositório estão relacionados a geração da I.A utilizada no TatuZap, capaz de realizar uma conversa que atenda as requisições do usuário, utilizando informações fornecidas pelo mesmo em conjunto com nosso back-end (https://github.com/TatuZap/ETLTatuZap).
@@ -35,7 +35,7 @@ git clone https://github.com/TatuZap/BotTatuZap
 O passo seguinte é a execução do makefile que automatiza o download das dependencias (módulos) que utilizamos em nosso projeto. 
 No terminal digite:
 ```sh
-cd BotTatuZap && make all
+cd TatuBotTelegram && make all
 ```
 Para concluir o setup, execute o script ***nltksetup.py*** que efetua download de algumas dependecia internas para o
 funcionamento completo da biblioteca NLTK (Natural Language ToolKit). Esse script deve ser acionado apenas uma vez.
@@ -45,7 +45,7 @@ python3.8 nltksetup.py
 ## Como usar
 O arquivo principal que possui toda a funcionalidade da I.A do TatuBot é o ***tatuia.py***. Para executá-lo, digite:
 ```sh
-python3.8 tatuia.py
+python3.8 tatutelegram.py
 ```
 
 ## Exemplo de uso
