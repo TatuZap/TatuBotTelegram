@@ -29,7 +29,7 @@ instalar o Python visite https://www.python.org/downloads/.
 
 Com uma instalação do Python3.8 e um cliente git, clone nosso repositorio. Isso pode ser feito com o seguinte comando:
 ```sh
-git clone https://github.com/TatuZap/BotTatuZap
+git clone https://github.com/TatuZap/TatuBotTelegram
 ```
 
 O passo seguinte é a execução do makefile que automatiza o download das dependencias (módulos) que utilizamos em nosso projeto. 
@@ -43,7 +43,7 @@ funcionamento completo da biblioteca NLTK (Natural Language ToolKit). Esse scrip
 python3.8 nltksetup.py
 ```
 ## Como usar
-O arquivo principal que possui toda a funcionalidade da I.A do TatuBot é o ***tatuia.py***. Para executá-lo, digite:
+O arquivo principal que possui toda a integração da I.A do TatuBot com o Telegram é o ***tatutelegram.py***. Para executá-lo, digite:
 ```sh
 python3.8 tatutelegram.py
 ```
