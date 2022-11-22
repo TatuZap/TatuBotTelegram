@@ -14,9 +14,27 @@ import random
 import pickle
 import json
 import os
+import unidecode
+import re
+
+import src.connection.database as database
+import src.connection.fretados_model as fretado_model
+import src.connection.catalogo_model as catalogo_model
+import src.connection.restaurante_model as restaurante_model
+import src.connection.usuario_model as usuario_model
+
+from datetime import datetime 
+
+
 from unittest import result
 
 from src.load.DB import get_db,DBCollections
+
+from difflib import SequenceMatcher
+
+from nltk.corpus import stopwords
+
+STOPWORDS = stopwords.words('portuguese')
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # tensorflow tags
@@ -234,7 +252,53 @@ def turmas(RA):
             string += 'Disciplina: {}, Horário Teoria: {}\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
     return string
 
+def extract_ra(message):
+    return message_utils.is_ra(message)
 
+def extract_origem_destino(message):
+    return message_utils.check_origin(message)
+
+def get_fretado(message):
+    user_localtime = extract_origem_destino(message)
+    response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
+    return "Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida']) if response else None
+
+def extract_nome_disciplina(message):
+    msg = unidecode.unidecode(message).lower() #limpa caracteres especiais da mensagem e coloca em lower
+    return re.search(r'(ementa|informacoes|requisitos|bibliografia|(plano de ensino)|(plano ensino)).?(sobre|de)?(.*?)$',string=msg) # retorna None se não encontrou nada dentro do padrão
+
+def get_disciplinas(message):
+    search_nome_disc = extract_nome_disciplina(message)
+    nova_mensagem = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
+    #         mensagem.text.lower().split('ementa ')[1]
+    apelido_matéria = ''.join([ w[0] for w in nova_mensagem.split() if w not in STOPWORDS]) #gera o apelido da matéria pedida
+    print('apelido ', apelido_matéria)
+    return list(catalogo_model.find_by_apelido(apelido_matéria)) #retorna a lista de disciplina com tal apelido
+
+def get_disciplina_selecionada(message):
+    lista_disc = get_disciplinas(message)
+    nova_mensagem = extract_nome_disciplina(message).group(5)
+    print('nome ', nova_mensagem)
+    similar_discipline = None
+    for disc in lista_disc:
+        sim_nome = SequenceMatcher(None, nova_mensagem, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco 
+        #sim_apelido = similar(nova_mensagem, disc['apelido'])
+        print('similarity ', sim_nome)
+        if sim_nome > 0.6:
+            similar_discipline = disc
+        #if sim_apelido > 0.8:
+        #    similar_discipline = disc        
+        print(disc['disciplina'] + ' ' + disc['sigla'] ) 
+    texto_saida = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
+    print(texto_saida) 
+    return texto_saida
+
+def get_ru_hoje(message,tipo):
+    saida = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),0))[0]
+    if saida:
+        resposta = "{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
+    else: resposta = 'Falha na recuperação do cardápio'
+    return resposta
 
 # print(">>> Demo da funcionalidade de reconhecimento de intenção do TatuBot.")
 # print(">>> Inicialmente a I.A foi treinada com cinco intenções (welcome,myclasses,businfo,discinfo,ru).")

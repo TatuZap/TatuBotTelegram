@@ -15,10 +15,10 @@ from datetime import datetime #FIXME
 
 # from bson.json_util import dumps, loads
 from dotenv import load_dotenv
-from nltk.corpus import stopwords
-from difflib import SequenceMatcher
+#from nltk.corpus import stopwords
+#from difflib import SequenceMatcher
 
-STOPWORDS = stopwords.words('portuguese')
+#STOPWORDS = stopwords.words('portuguese')
 sys.stdout.flush()
 
 #(forma provisória) variaveis para controle de fluxo
@@ -74,82 +74,53 @@ def responder(mensagem):
     #após classificar as mensagens em response (respota padrão do bot) e intent (intenção desejada da mensagem), adota comportamento diferente para cada intent
     
     if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
-            user_ra = tatuia.tatu_zap.message_utils.is_ra(mensagem.text)
+            user_ra = tatuia.extract_ra(mensagem.text) 
             if user_ra:
                 bot.send_message(mensagem.chat.id, tatuia.turmas(user_ra))
                 loopRA = False
-            else:
+            else: #se não extraiu um ra, pede para o usuario enviar um ra válido
                 bot.send_message(mensagem.chat.id, "Você solicitou informações sobre suas turmas, agora insira seu ra!")
                 loopRA = True
 
     elif intent == "businfo": #intent businfo, para conseguir informações sobre fretado
-        user_localtime =  tatuia.tatu_zap.message_utils.check_origin(mensagem.text) #captura origem/destino dentro da mensagem
+        user_localtime = tatuia.extract_origem_destino(mensagem.text) #captura origem/destino na mensagem
         if user_localtime:
             loopFRET = False
-            response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
+            response = tatuia.get_fretado(mensagem.text)
             print('response: ', response)            
             if response:
-                saida = response[0]
-                resposta = "Linha: {}, Horario_partida: {}".format(saida['linha'],saida['hora_partida'])
-                bot.send_message(mensagem.chat.id, resposta)
-            else:
+                bot.send_message(mensagem.chat.id, response)
+            else: #response é None quando não há linhas de fretado disponível para a requisição
                 bot.send_message(mensagem.chat.id, 'Não existem linhas de fretado disponíveis na próxima hora.')
             
-        else :
+        else : #se a mensagem não possui a origem nem o destino, pede para o usuário enviar essa informação
             resposta ="Por favor, para conseguirmos identificar qual fretado você quer, diga de onde você quer ir (de SA / de SBC) para onde (para SA/ para SBC)"
             bot.send_message(mensagem.chat.id, resposta)
             loopFRET = True
-            #     expected_local = input('user: ')
-            #     user_localtime =  tatuia.tatu_zap.message_utils.check_origin(expected_local)
                     
     elif intent == "discinfo": #intent discinfo, para informações (plano de ensino) das disciplinas
-        #(lambda x: "".join()
-        msg = unidecode.unidecode(mensagem.text).lower() #limpa caracteres especiais da mensagem e coloca em lower
-        search_nome_disc = re.search(r'(ementa|informacoes|requisitos|bibliografia|(plano de ensino)|(plano ensino)).?(sobre|de)?(.*?)$',string=msg) # retorna None se não encontrou nada dentro do padrão
-        if search_nome_disc:
-            nova_mensagem = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
-    #         mensagem.text.lower().split('ementa ')[1]
-            apelido_matéria = ''.join([ w[0] for w in nova_mensagem.split() if w not in STOPWORDS]) #gera o apelido da matéria pedida
-            print('apelido ', apelido_matéria)
-            response = list(catalogo_model.find_by_apelido(apelido_matéria)) #retorna a lista de disciplina com tal apelido
-            #response = list(catalogo_model.list_all())        
+        search_nome_disc = tatuia.extract_nome_disciplina(mensagem.text)
+        if search_nome_disc:       
+            response = tatuia.get_disciplinas(mensagem.text)
             print('response: ', response)
             keyboard = telebot.types.InlineKeyboardMarkup() #utilizado para gerar o menu em mensagens do telegram
-            similar_discipline = ''
             for disc in response: 
-                sim_nome = SequenceMatcher(None, nova_mensagem, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco 
-                #sim_apelido = similar(nova_mensagem, disc['apelido'])
-                print('similarity ', sim_nome)
-                if sim_nome > 0.6:
-                    similar_discipline = disc
-                #if sim_apelido > 0.8:
-                #    similar_discipline = disc
-                keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))
-                print(disc['disciplina'] + ' ' + disc['sigla'] ) #insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
+                keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
 
+            similar_discipline = tatuia.get_disciplina_selecionada(mensagem.text)
+            if similar_discipline:
+                bot.send_message(mensagem.chat.id,similar_discipline)
+            else :
+                bot.send_message(mensagem.chat.id, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
 
-            resposta = 'Selecione qual o nome da disciplina desejada'
-            if similar_discipline == '':
-                bot.send_message(mensagem.chat.id, resposta, reply_markup=keyboard)
-            else:
-                resposta = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa'])
-                bot.send_message(mensagem.chat.id, resposta)
-            loopDISC = False
         else : 
             resposta ="Por favor, para conseguirmos identificar de qual disciplina você quer o plano de ensino, diga o nome dela."
             loopDISC = True
             bot.send_message(mensagem.chat.id, resposta)
 
     elif intent == 'ru':
-        #response = list(restaurante_model.list_all())
-        response = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),0))
-        print('response: ', response)
-        #response = dumps(response)
-        #bot.send_message(mensagem.chat.id, "Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
-        saida = response[0]        
-        resposta = "{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
-        bot.send_message(mensagem.chat.id, resposta)
-        
+        # #response = list(restaurante_model.list_all())
+        bot.send_message(mensagem.chat.id,tatuia.get_ru_hoje(mensagem.text,0))
 
 
     else:
