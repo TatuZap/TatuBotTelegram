@@ -69,15 +69,14 @@ def responder(mensagem):
     elif (loopFRET):
         response, intent = tatuia.tatu_zap.get_reply('fretados ' + mensagem.text)
     else:
-        response, intent = tatuia.tatu_zap.get_reply(mensagem.text)
+        response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
 
     #após classificar as mensagens em response (respota padrão do bot) e intent (intenção desejada da mensagem), adota comportamento diferente para cada intent
     
     if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
             user_ra = tatuia.tatu_zap.message_utils.is_ra(mensagem.text)
             if user_ra:
-                texto += tatuia.turmas(user_ra)
-                bot.send_message(mensagem.chat.id, texto)
+                bot.send_message(mensagem.chat.id, tatuia.turmas(user_ra))
                 loopRA = False
             else:
                 bot.send_message(mensagem.chat.id, "Você solicitou informações sobre suas turmas, agora insira seu ra!")
@@ -88,9 +87,7 @@ def responder(mensagem):
         if user_localtime:
             loopFRET = False
             response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
-            print('response: ', response)
-            #response = dumps(response)
-            #bot.send_message(mensagem.chat.id, "Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
+            print('response: ', response)            
             if response:
                 saida = response[0]
                 resposta = "Linha: {}, Horario_partida: {}".format(saida['linha'],saida['hora_partida'])
