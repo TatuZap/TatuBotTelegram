@@ -59,4 +59,10 @@ def clean_bus_df(df):
     for column in parsed_dataframe.columns:
         parsed_dataframe.loc[(parsed_dataframe[column] == "---"),column] = 'N/A'
 
+    # for column in parsed_dataframe.columns:
+    # if column == "hora_partida" or column == "hora_chegada":
+    #     parsed_dataframe[column] = parsed_dataframe[column].apply( lambda x : datetime.datetime(2022,1,1,int(x.split(":")[0]),int(x.split(":")[1])).isoformat() if x != "---" else "N/A")
+    #     parsed_dataframe.loc[(parsed_dataframe[column] == "---"),column] = 'N/A'
+
+
     return parsed_dataframe

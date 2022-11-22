@@ -16,7 +16,7 @@ import json
 import os
 from unittest import result
 
-from src.load.database import get_db,DBCollections
+#from src.load.database import get_db,DBCollections
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # tensorflow tags
@@ -213,27 +213,29 @@ tatu_zap = TatuIA("", message_utils=message_utils,lstm=False)
 
 #tatu_zap.eval_model()
 
-turmas_por_ra_collection = get_db[DBCollections.TURMAS_POR_RA]
+#turmas_por_ra_collection = get_db[DBCollections.TURMAS_POR_RA]
 
-def turmas(RA):
-    QUERY = {"RA": str(RA)}
-    string = ""
-    result = list(turmas_por_ra_collection.find(QUERY))
-    if result == []: return 'RA não encontrado, tente novamente'
-    lista = result[0]["TURMAS"]
-    for res in lista:del res['_id']
-    lista_clean = [dict(item) for item in {tuple(dict.items()) for dict in lista}]
-    for disciplina in lista_clean:
-        teoria = disciplina['HORÁRIO TEORIA']
-        pratica = disciplina['HORÁRIO PRÁTICA']
-        nome = disciplina['DISCIPLINA - TURMA']
+# def turmas(RA):
+#     QUERY = {"RA": str(RA)}
+#     string = ""
+#     result = list(turmas_por_ra_collection.find(QUERY))
+#     if result == []: return 'RA não encontrado, tente novamente'
+#     lista = result[0]["TURMAS"]
+#     for res in lista:del res['_id']
+#     lista_clean = [dict(item) for item in {tuple(dict.items()) for dict in lista}]
+#     for disciplina in lista_clean:
+#         teoria = disciplina['HORÁRIO TEORIA']
+#         pratica = disciplina['HORÁRIO PRÁTICA']
+#         nome = disciplina['DISCIPLINA - TURMA']
 
-        if teoria == 0:
-            string += 'Disciplina: {}, Horário Prática: {}\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) 
-        if pratica == 0:
-            string += 'Disciplina: {}, Horário Teoria: {}\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
-    return string
+#         if teoria == 0:
+#             string += 'Disciplina: {}, Horário Prática: {}\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) 
+#         if pratica == 0:
+#             string += 'Disciplina: {}, Horário Teoria: {}\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
+#     return string
 
+def turmas():
+    return 'fill'
 
 
 # print(">>> Demo da funcionalidade de reconhecimento de intenção do TatuBot.")

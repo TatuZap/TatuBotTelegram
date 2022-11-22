@@ -27,7 +27,7 @@ from keras.preprocessing.text import Tokenizer
 
 
 
-from datetime import datetime
+from datetime import datetime,timedelta
 
 # deixe a linha abaixo sem comentários somente se precisar dessas bibliotecas de nlp
 
@@ -190,11 +190,14 @@ class MessageUtils:
 
         if origem and destino :
             now = datetime.now()
+            limite = now  + timedelta(hours=1)
             current_time = now.strftime("%H:%M")
+            limite_time = limite.strftime("%H:%M")
             lista.append(origem)
             lista.append(destino)
             lista.append(current_time)
-
+            lista.append(limite_time)
+            lista.append(datetime.now().weekday())
 
         return None if lista == [] else lista
         

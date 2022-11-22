@@ -5,15 +5,18 @@ import json
 import unidecode
 import tatuia
 import sys 
-import src.load.fretados_model as fretado_model
-import src.load.catalogo_model as catalogo_model
+import src.connection.database as database
+import src.connection.fretados_model as fretado_model
+import src.connection.catalogo_model as catalogo_model
+import src.connection.restaurante_model as restaurante_model
+import src.connection.usuario_model as usuario_model
+
+from datetime import datetime #FIXME
 
 # from bson.json_util import dumps, loads
 from dotenv import load_dotenv
 from nltk.corpus import stopwords
 from difflib import SequenceMatcher
-
-def similar(a, b): return SequenceMatcher(None, a, b).ratio()
 
 STOPWORDS = stopwords.words('portuguese')
 sys.stdout.flush()
@@ -60,8 +63,7 @@ def responder(mensagem):
     if (loopRA):
         response, intent = tatuia.tatu_zap.get_reply('materias ' + mensagem.text)
     elif (loopDISC):
-        convert = [ w[0] for w in mensagem.text.lower().split() if w not in STOPWORDS]
-        apelido_matéria = ''.join(convert)
+        apelido_matéria = ''.join([ w[0] for w in mensagem.text.lower().split() if w not in STOPWORDS])
         response, intent = tatuia.tatu_zap.get_reply('ementa ' + apelido_matéria)
         mensagem.text = apelido_matéria
     elif (loopFRET):
@@ -85,13 +87,16 @@ def responder(mensagem):
         user_localtime =  tatuia.tatu_zap.message_utils.check_origin(mensagem.text) #captura origem/destino dentro da mensagem
         if user_localtime:
             loopFRET = False
-            response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2]))
+            response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
             print('response: ', response)
             #response = dumps(response)
             #bot.send_message(mensagem.chat.id, "Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
-            saida = response[1]
-            resposta = "Linha: {}, Horario_partida: {}".format(saida['linha'],saida['hora_partida'])
-            bot.send_message(mensagem.chat.id, resposta)
+            if response:
+                saida = response[0]
+                resposta = "Linha: {}, Horario_partida: {}".format(saida['linha'],saida['hora_partida'])
+                bot.send_message(mensagem.chat.id, resposta)
+            else:
+                bot.send_message(mensagem.chat.id, 'Não existem linhas de fretado disponíveis na próxima hora.')
             
         else :
             resposta ="Por favor, para conseguirmos identificar qual fretado você quer, diga de onde você quer ir (de SA / de SBC) para onde (para SA/ para SBC)"
@@ -107,8 +112,7 @@ def responder(mensagem):
         if search_nome_disc:
             nova_mensagem = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
     #         mensagem.text.lower().split('ementa ')[1]
-            convert = [ w[0] for w in nova_mensagem.split() if w not in STOPWORDS] 
-            apelido_matéria = ''.join(convert) #gera o apelido da matéria pedida
+            apelido_matéria = ''.join([ w[0] for w in nova_mensagem.split() if w not in STOPWORDS]) #gera o apelido da matéria pedida
             print('apelido ', apelido_matéria)
             response = list(catalogo_model.find_by_apelido(apelido_matéria)) #retorna a lista de disciplina com tal apelido
             #response = list(catalogo_model.list_all())        
@@ -116,7 +120,7 @@ def responder(mensagem):
             keyboard = telebot.types.InlineKeyboardMarkup() #utilizado para gerar o menu em mensagens do telegram
             similar_discipline = ''
             for disc in response: 
-                sim_nome = similar(nova_mensagem, disc['disciplina']) #similaridade entre o nome da disciplina com o encontrado no banco 
+                sim_nome = SequenceMatcher(None, nova_mensagem, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco 
                 #sim_apelido = similar(nova_mensagem, disc['apelido'])
                 print('similarity ', sim_nome)
                 if sim_nome > 0.6:
@@ -133,19 +137,21 @@ def responder(mensagem):
             else:
                 resposta = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa'])
                 bot.send_message(mensagem.chat.id, resposta)
+            loopDISC = False
         else : 
             resposta ="Por favor, para conseguirmos identificar de qual disciplina você quer o plano de ensino, diga o nome dela."
+            loopDISC = True
             bot.send_message(mensagem.chat.id, resposta)
-    # elif intent == 'ru':
-    #     keyboard = telebot.types.InlineKeyboardMarkup()
-    #     keyboard.row(
-    #         telebot.types.InlineKeyboardButton('vitor', callback_data='11201721679')
-    #     )
-    #     keyboard.row(
-    #         telebot.types.InlineKeyboardButton('fabio', callback_data='11201722790'),
-    #         telebot.types.InlineKeyboardButton('higor', callback_data='11201810691')
-    #     )
-    #     bot.send_message(mensagem.chat.id, 'Click on the currency of choice:', reply_markup=keyboard)
+
+    elif intent == 'ru':
+        #response = list(restaurante_model.list_all())
+        response = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),0))
+        print('response: ', response)
+        #response = dumps(response)
+        #bot.send_message(mensagem.chat.id, "Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
+        saida = response[0]        
+        resposta = "{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
+        bot.send_message(mensagem.chat.id, resposta)
         
 
 

@@ -2,7 +2,7 @@ from transform.turmas.tratamento import tratamento_json,tratamento_df, to_json_f
 from transform.turmas.turma_por_ra import tratamento_turma_por_ra,get_all_ra,turmas_por_ra,tratamento_matriculas_pos_ajuste_pos_carga
 from extract.turmas.get_files import file_output
 from extract.turmas.extrator import get_all_dataframes
-from src.load.database import get_db,DBCollections
+from load.DB import get_db,DBCollections
 from load.turmas.carga import load_one,load_json
 import os
 import json
