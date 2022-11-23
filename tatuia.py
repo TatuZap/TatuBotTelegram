@@ -294,7 +294,7 @@ def get_disciplina_selecionada(message):
     return texto_saida
 
 def get_ru_hoje(message,tipo):
-    saida = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),0))[0]
+    saida = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo))[0]
     if saida:
         resposta = "{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
     else: resposta = 'Falha na recuperação do cardápio'

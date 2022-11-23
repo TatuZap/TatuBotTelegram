@@ -15,10 +15,10 @@ from datetime import datetime #FIXME
 
 # from bson.json_util import dumps, loads
 from dotenv import load_dotenv
-#from nltk.corpus import stopwords
+from nltk.corpus import stopwords
 #from difflib import SequenceMatcher
 
-#STOPWORDS = stopwords.words('portuguese')
+STOPWORDS = stopwords.words('portuguese')
 sys.stdout.flush()
 
 #(forma provisória) variaveis para controle de fluxo
