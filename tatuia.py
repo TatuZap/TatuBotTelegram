@@ -220,7 +220,7 @@ database = {
     }
 
 
-database = gerador.fill_database(database,50)
+database = gerador.fill_database(database,500)
 # demo da funcionalide da classe utils para mensagem
 message_utils = MessageUtils()
 message_utils.process_training_data(database,None)
@@ -308,19 +308,27 @@ def get_disciplina_selecionada(message):
         if sim_nome > 0.6:
             similar_discipline = disc
         #if sim_apelido > 0.8:
-        #    similar_discipline = disc        
-        print(disc['disciplina'] + ' ' + disc['sigla'] ) 
+        #    similar_discipline = disc
+        print(disc['disciplina'] + ' ' + disc['sigla'] )
     texto_saida = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
-    print(texto_saida) 
+    print(texto_saida)
     return texto_saida
 
-def get_ru_hoje(message,tipo):
+def get_ru_hoje(message):
     """
     Retorna as informações para o cardápio do RU para o dia de hoje
     """
+    tipo = 0
     saida = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo))[0]
     if saida:
-        resposta = "{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
+        jantar = re.findall(r"jantar|noite", message)
+        almoço = re.findall(r"almoço|manha", message)
+        if jantar:
+            resposta = "Jantar:{}\nSalada: {}\nSobremesa: {}".format(saida['jantar'],saida['saladas'],saida['sobremesas'])
+        elif almoço:
+            resposta = "Almoço:{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
+        else:
+            resposta = "Almoço:{}\nJanta:{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['jantar'],saida['saladas'],saida['sobremesas'])
     else: resposta = 'Falha na recuperação do cardápio'
     return resposta
 

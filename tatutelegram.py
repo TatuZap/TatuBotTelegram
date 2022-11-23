@@ -120,7 +120,7 @@ def responder(mensagem):
 
     elif intent == 'ru':
         # #response = list(restaurante_model.list_all())
-        bot.send_message(mensagem.chat.id,tatuia.get_ru_hoje(mensagem.text,0))
+        bot.send_message(mensagem.chat.id,tatuia.get_ru_hoje(mensagem.text))
 
 
     else:
