@@ -234,6 +234,9 @@ tatu_zap = TatuIA("", message_utils=message_utils,lstm=False)
 turmas_por_ra_collection = get_db[DBCollections.TURMAS_POR_RA]
 
 def turmas(RA):
+    """
+    Retorna as turmas (no formato de string a ser exibido) para determinado RA, caso o encontre
+    """
     QUERY = {"RA": str(RA)}
     string = ""
     result = list(turmas_por_ra_collection.find(QUERY))
@@ -253,21 +256,36 @@ def turmas(RA):
     return string
 
 def extract_ra(message):
+    """
+    Retorna o RA extraido de uma string.
+    """
     return message_utils.is_ra(message)
 
 def extract_origem_destino(message):
+    """
+    Retorna uma lista com origem, destino, horário atual, horário limite (+1h) e dia da semana
+    """
     return message_utils.check_origin(message)
 
 def get_fretado(message):
+    """
+    Retorna o próximo fretado (formatado para uma String 'Linha e Horário de Partida') para origem, destino, horário atual,horário limite (+1h) e dia da semana. 
+    """
     user_localtime = extract_origem_destino(message)
     response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
     return "Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida']) if response else None
 
 def extract_nome_disciplina(message):
+    """
+    Retorna a extração do nome de disciplinas de uma string, necessario utilizar .group(5) para acessar o nome 
+    """
     msg = unidecode.unidecode(message).lower() #limpa caracteres especiais da mensagem e coloca em lower
     return re.search(r'(ementa|informacoes|requisitos|bibliografia|(plano de ensino)|(plano ensino)).?(sobre|de)?(.*?)$',string=msg) # retorna None se não encontrou nada dentro do padrão
 
 def get_disciplinas(message):
+    """
+    Retorna a lista de disciplinas similares ao nome encontrado na string 
+    """
     search_nome_disc = extract_nome_disciplina(message)
     nova_mensagem = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
     #         mensagem.text.lower().split('ementa ')[1]
@@ -276,6 +294,9 @@ def get_disciplinas(message):
     return list(catalogo_model.find_by_apelido(apelido_matéria)) #retorna a lista de disciplina com tal apelido
 
 def get_disciplina_selecionada(message):
+    """
+    Retorna a string formatada para a disciplina mais próxima (similaridade de texto) ao nome extraido da string 
+    """
     lista_disc = get_disciplinas(message)
     nova_mensagem = extract_nome_disciplina(message).group(5)
     print('nome ', nova_mensagem)
@@ -294,6 +315,9 @@ def get_disciplina_selecionada(message):
     return texto_saida
 
 def get_ru_hoje(message,tipo):
+    """
+    Retorna as informações para o cardápio do RU para o dia de hoje
+    """
     saida = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo))[0]
     if saida:
         resposta = "{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
