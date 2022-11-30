@@ -52,26 +52,27 @@ class TatuIA:
         self.dfa_file = dfa_file_path
         self.message_utils = message_utils  # classe de pré-processamento de textos
         self.model = self.__simple_ann() if not lstm else self.__simple_lstm() # neuranet do bot
-        self.__train()
+        #self.__train()
+        self.__load_model()
         self.PROB_SAFE_VALUE = 0.25
 
     def __load_model(self):
-        # current_filepath = os.getcwd()
-        # model_folder = "modelbot"
-        # complete_path = os.path.join(current_filepath, model_folder)
-        # if os.path.exists(complete_path):
-        #     print(">>> Carregando o TatuBot do Disco")
-        #     self.model = tf.keras.models.load_model(complete_path + "/model")
-        #     print(">>> Fim do Carregando o TatuBot do Disco")
-        # else:
-        print(">>> Build do TatuBot")
-        if self.model:
+        current_filepath = os.getcwd()
+        model_folder = "modelbot"
+        complete_path = os.path.join(current_filepath, model_folder)
+        if os.path.exists(complete_path):
+            print(">>> Carregando o TatuBot do Disco")
+            self.model = tf.keras.models.load_model(complete_path + "/model")
+            print(">>> Fim do Carregando o TatuBot do Disco")
+        else:
+            print(">>> Build do TatuBot")
+            if self.model:
+                self.__train()
+            self.model = self.__simple_ann()
             self.__train()
-        self.model = self.__simple_ann()
-        self.__train()
-        #os.mkdir(complete_path)
-        #self.model.save(complete_path + "/model")
-        print(">>> Fim do Build, TatuBot dumped")
+            os.mkdir(complete_path)
+            self.model.save(complete_path + "/model")
+            print(">>> Fim do Build, TatuBot dumped")
 
     def __simple_ann(self):
         self.X = self.message_utils.X
@@ -86,7 +87,7 @@ class TatuIA:
         model.add(Dense(64, activation="relu"))
         model.add(Dropout(0.3))
         model.add(Dense(output_shape, activation="softmax"))
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.01, decay=1e-6)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 
         #model.compile(loss='categorical_crossentropy',optimizer=optimizer,metrics=[tf.keras.metrics.AUC()])
         model.compile(loss='categorical_crossentropy',optimizer=optimizer,metrics=['acc'])
@@ -165,6 +166,17 @@ class TatuIA:
                 result = random.choice(idx['responses'])
                 break
 
+        if most_prob_intent == 'myclasses':
+            result = turmas(extract_ra(user_message))
+        elif most_prob_intent == 'businfo':
+            fretado = get_fretado(user_message)
+            result = fretado if fretado else 'Não encontrei um fretado adequado'
+        elif most_prob_intent == 'discinfo':
+            disc = get_disciplina_selecionada(user_message)
+            result = disc if disc else 'Não encontrei a disciplina selecionada'
+        elif most_prob_intent == 'ru':
+            result = get_ru_hoje(user_message)
+        print('result: ',result)
         return result, most_prob_intent
 
     def get_predict(self, user_message):
@@ -272,6 +284,7 @@ def get_fretado(message):
     Retorna o próximo fretado (formatado para uma String 'Linha e Horário de Partida') para origem, destino, horário atual,horário limite (+1h) e dia da semana. 
     """
     user_localtime = extract_origem_destino(message)
+    if not user_localtime : return 'não encontrei a origem ou destino'
     response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
     return "Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida']) if response else None
 
