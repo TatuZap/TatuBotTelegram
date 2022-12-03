@@ -1,6 +1,7 @@
 import unittest
 import tatuia
 import json 
+import src.connection.fretados_model as fretados_model
 
 
 class Testtatuia(unittest.TestCase):
@@ -10,7 +11,7 @@ class Testtatuia(unittest.TestCase):
     """
     def test_welcome(self):
         """
-            O list_all após população deve retornar ao menos 1 elemento
+            A ia deve retornar a intent correta
         """
         #restaurante_model.populate_database() # garante que o database foi populado
         try:
@@ -22,7 +23,7 @@ class Testtatuia(unittest.TestCase):
 
     def test_anything(self):
         """
-            O list_all após população deve retornar ao menos 1 elemento
+            A ia deve retornar a intent correta
         """
         #restaurante_model.populate_database() # garante que o database foi populado
         try:
@@ -32,6 +33,56 @@ class Testtatuia(unittest.TestCase):
             print(e)
             self.fail("A mensagem não deve retornar Erro")
 
+    def test_myclasses(self):
+        """
+            A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
+        """
+        #restaurante_model.populate_database() # garante que o database foi populado
+        try:
+            result,intent = tatuia.tatu_zap.get_reply('qual as matérias do ra 11201721679')
+            self.assertEqual(intent, 'myclasses',"Não apresentou a intent correta")
+            self.assertEqual(result.find('Disciplina:'), not -1,"Não apresentou a lista de disciplinas esperadas")
+        except Exception as e:
+            print(e)
+            self.fail("A mensagem não deve retornar Erro")
+    def test_myclasses_notRA(self):
+        """
+            A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
+        """
+        #restaurante_model.populate_database() # garante que o database foi populado
+        try:
+            result,intent = tatuia.tatu_zap.get_reply('qual as matérias do ra ')
+            self.assertEqual(intent, 'myclasses',"Não apresentou a intent correta")
+            self.assertEqual(result, 'RA não encontrado, por favor digite seu RA',"Não apresentou a mensagem para quando não informou o RA.")
+        except Exception as e:
+            print(e)
+            self.fail("A mensagem não deve retornar Erro")
+
+    def test_fretados(self):
+        """
+            A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
+        """
+        fretados_model.populate_database()
+        try:
+            result,intent = tatuia.tatu_zap.get_reply('qual o próximo fretade de sa pra sbc')
+            self.assertEqual(intent, 'businfo',"Não apresentou a intent correta")
+            self.assertEqual(result.find('linha:'), not -1,"Não apresentou a mensagem para as fretados.")
+        except Exception as e:
+            print(e)
+            self.fail("A mensagem não deve retornar Erro")
+
+    def test_discinfo(self):
+        """
+            A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
+        """
+        fretados_model.populate_database()
+        try:
+            result,intent = tatuia.tatu_zap.get_reply('quero saber a ementa de fisica quantica')
+            self.assertEqual(intent, 'discinfo',"Não apresentou a intent correta")
+            self.assertEqual(result.find('Ementa: Bases experimentais da Mecânica Quântica'), not -1,"Não apresentou a ementa para fisica quantica.")
+        except Exception as e:
+            print(e)
+            self.fail("A mensagem não deve retornar Erro")
     # def test_insert_item_inserts(self):
     #     """
     #         A função de inserção de um único elemento não deve retornar erros.

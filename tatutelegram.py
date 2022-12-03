@@ -224,7 +224,9 @@ def padrao(mensagem):
                         keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
 
                     msg = bot.reply_to(mensagem, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
-                bot.register_next_step_handler(msg,padrao)
+                else: msg = bot.reply_to(mensagem,response)
+
+            bot.register_next_step_handler(msg,padrao)
         else:
             msg = bot.reply_to(mensagem,response)
             bot.register_next_step_handler(msg,padrao)
