@@ -4,27 +4,39 @@ import re
 import json
 import unidecode
 import tatuia
-import sys 
+import sys
 import src.connection.database as database
 import src.connection.fretados_model as fretado_model
 import src.connection.catalogo_model as catalogo_model
 import src.connection.restaurante_model as restaurante_model
 import src.connection.usuario_model as usuario_model
 
-from datetime import datetime #FIXME
-
-# from bson.json_util import dumps, loads
 from dotenv import load_dotenv
 from nltk.corpus import stopwords
-#from difflib import SequenceMatcher
 
-STOPWORDS = stopwords.words('portuguese')
+
+from telebot import custom_filters
+from telebot.handler_backends import State, StatesGroup #States
+
+# States storage
+from telebot.storage import StateMemoryStorage
+
+
+from telebot import types
+
 sys.stdout.flush()
 
-#(forma provisória) variaveis para controle de fluxo
-loopRA = False
-loopDISC = False
-loopFRET = False
+# # States group.
+# class MyStates(StatesGroup):
+#     # Just name variables differently
+#     inicial = State()
+#     ra = State() 
+#     disc = State()
+#     fret = State()
+
+
+# # Now, you can pass storage to bot.
+# state_storage = StateMemoryStorage() # you can init here another storage
 
 load_dotenv(os.path.join(os.getcwd(), '.env')) # carrega as variáveis do arquivo .env local 
 CHAVE_API = os.getenv("BOT_API")
@@ -38,97 +50,95 @@ msginicial = 'Bem-Vindo ao TatuBot.\n Nosso bot possui como funcionalidades info
 
 
 
-'''
-    Função quando o usuário da um /start
-'''
-@bot.message_handler(commands=["start"])
-def pizza(mensagem):
-    bot.send_message(mensagem.chat.id, msginicial)
+# '''
+#     Função quando o usuário da um /start
+# '''
+# @bot.message_handler(commands=["start"])
+# def inicio(mensagem):
+#     bot.send_message(mensagem.chat.id, msginicial)
 
 def verificar(mensagem):
     return True
 
+
 '''
    Handler para todas as mensagens de usuários
 '''
-@bot.message_handler(func=verificar)
-def responder(mensagem):
-    print("Aqui está a mensagem",mensagem)
-    texto = ""
-    global loopRA
-    global loopDISC
-    global loopFRET
 
-    #testa os casos em que a mensagem estaria dentro de um loop (uma requisição do bot)
-    if (loopRA):
-        response, intent = tatuia.tatu_zap.get_reply('materias ' + mensagem.text)
-    elif (loopDISC):
-        apelido_matéria = ''.join([ w[0] for w in mensagem.text.lower().split() if w not in STOPWORDS])
-        response, intent = tatuia.tatu_zap.get_reply('ementa ' + apelido_matéria)
-        mensagem.text = apelido_matéria
-    elif (loopFRET):
-        response, intent = tatuia.tatu_zap.get_reply('fretados ' + mensagem.text)
-    else:
-        response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
+# @bot.message_handler(func=verificar)
+# def responder(mensagem):
+#     print("Aqui está a mensagem",mensagem)
+#     texto = ""
+
+
+    # #testa os casos em que a mensagem estaria dentro de um loop (uma requisição do bot)
+    # if (loopRA):
+    #     response, intent = tatuia.tatu_zap.get_reply('materias ' + mensagem.text)
+    # elif (loopFRET):
+    #     response, intent = tatuia.tatu_zap.get_reply('fretados ' + mensagem.text)
+    # else:
+    #     response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
+
 
     #após classificar as mensagens em response (respota padrão do bot) e intent (intenção desejada da mensagem), adota comportamento diferente para cada intent
-    
-    if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
-            user_ra = tatuia.extract_ra(mensagem.text) 
-            if user_ra:
-                bot.send_message(mensagem.chat.id, tatuia.turmas(user_ra))
-                loopRA = False
-            else: #se não extraiu um ra, pede para o usuario enviar um ra válido
-                bot.send_message(mensagem.chat.id, "Você solicitou informações sobre suas turmas, agora insira seu ra!")
-                loopRA = True
-
-    elif intent == "businfo": #intent businfo, para conseguir informações sobre fretado
-        user_localtime = tatuia.extract_origem_destino(mensagem.text) #captura origem/destino na mensagem
-        if user_localtime:
-            loopFRET = False
-            response = tatuia.get_fretado(mensagem.text)
-            print('response: ', response)            
-            if response:
-                bot.send_message(mensagem.chat.id, response)
-            else: #response é None quando não há linhas de fretado disponível para a requisição
-                bot.send_message(mensagem.chat.id, 'Não existem linhas de fretado disponíveis na próxima hora.')
-            
-        else : #se a mensagem não possui a origem nem o destino, pede para o usuário enviar essa informação
-            resposta ="Por favor, para conseguirmos identificar qual fretado você quer, diga de onde você quer ir (de SA / de SBC) para onde (para SA/ para SBC)"
-            bot.send_message(mensagem.chat.id, resposta)
-            loopFRET = True
-                    
-    elif intent == "discinfo": #intent discinfo, para informações (plano de ensino) das disciplinas
-        search_nome_disc = tatuia.extract_nome_disciplina(mensagem.text)
-        if search_nome_disc:       
-            response = tatuia.get_disciplinas(mensagem.text)
-            print('response: ', response)
-            keyboard = telebot.types.InlineKeyboardMarkup() #utilizado para gerar o menu em mensagens do telegram
-            for disc in response: 
-                keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
-
-            similar_discipline = tatuia.get_disciplina_selecionada(mensagem.text)
-            if similar_discipline:
-                bot.send_message(mensagem.chat.id,similar_discipline)
-            else :
-                bot.send_message(mensagem.chat.id, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
-
-        else : 
-            resposta ="Por favor, para conseguirmos identificar de qual disciplina você quer o plano de ensino, diga o nome dela."
-            loopDISC = True
-            bot.send_message(mensagem.chat.id, resposta)
-
-    elif intent == 'ru':
-        # #response = list(restaurante_model.list_all())
-        bot.send_message(mensagem.chat.id,tatuia.get_ru_hoje(mensagem.text))
 
 
-    else:
-        bot.reply_to(mensagem, response)
+    # if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
+    #         user_ra = tatuia.extract_ra(mensagem.text)
+    #         if user_ra:
+    #             bot.send_message(mensagem.chat.id, tatuia.turmas(user_ra))
+    #             loopRA = False
+    #         else: #se não extraiu um ra, pede para o usuario enviar um ra válido
+    #             bot.send_message(mensagem.chat.id, "Você solicitou informações sobre suas turmas, agora insira seu ra!")
+    #             loopRA = True
 
-    
-    
+    # elif intent == "businfo": #intent businfo, para conseguir informações sobre fretado
+    #     user_localtime = tatuia.extract_origem_destino(mensagem.text) #captura origem/destino na mensagem
+    #     if user_localtime:
+    #         loopFRET = False
+    #         response = tatuia.get_fretado(mensagem.text)
+    #         print('response: ', response)
+    #         if response:
+    #             bot.send_message(mensagem.chat.id, response)
+    #         else: #response é None quando não há linhas de fretado disponível para a requisição
+    #             bot.send_message(mensagem.chat.id, 'Não existem linhas de fretado disponíveis na próxima hora.')
+
+    #     else : #se a mensagem não possui a origem nem o destino, pede para o usuário enviar essa informação
+    #         resposta ="Por favor, para conseguirmos identificar qual fretado você quer, diga de onde você quer ir (de SA / de SBC) para onde (para SA/ para SBC)"
+    #         bot.send_message(mensagem.chat.id, resposta)
+    #         loopFRET = True
+
+    # elif intent == "discinfo": #intent discinfo, para informações (plano de ensino) das disciplinas
+    #     search_nome_disc = tatuia.extract_nome_disciplina(mensagem.text)
+    #     if search_nome_disc:
+    #         response = tatuia.get_disciplinas(mensagem.text)
+    #         print('response: ', response)
+    #         keyboard = telebot.types.InlineKeyboardMarkup() #utilizado para gerar o menu em mensagens do telegram
+    #         for disc in response:
+    #             keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
+
+    #         similar_discipline = tatuia.get_disciplina_selecionada(mensagem.text)
+    #         if similar_discipline:
+    #             bot.send_message(mensagem.chat.id,similar_discipline)
+    #         else :
+    #             bot.send_message(mensagem.chat.id, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
+
+    #     else :
+    #         resposta ="Por favor, para conseguirmos identificar de qual disciplina você quer o plano de ensino, diga o nome dela."
+    #         loopDISC = True
+    #         bot.send_message(mensagem.chat.id, resposta)
+
+    # elif intent == 'ru':
+    #     # #response = list(restaurante_model.list_all())
+    #     bot.send_message(mensagem.chat.id,tatuia.get_ru_hoje(mensagem.text))
+
+
+    # else:
+    #     bot.reply_to(mensagem, response)
+
+
     #bot.reply_to(mensagem, texto)
+    # bot.send_message(mensagem.chat.id,response)
 
 #lida com callback (como o utilizado no menu no discinfo)
 @bot.callback_query_handler(func=lambda call: True)
@@ -137,7 +147,126 @@ def test_callback(call): # <- passes a CallbackQuery type object to your functio
         saida = list(catalogo_model.find_by_sigla(userMessage))[0]
         print('saida: ',saida)
         texto = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(saida['disciplina'],saida['TPI'],saida['sigla'],saida['recomendacoes'],saida['ementa'])
-        
+
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=texto)
 
-bot.polling()
+
+
+#STATE
+
+# '''
+# Função quando o usuário da um /start
+# '''
+# @bot.message_handler(commands=["start"])
+# def inicio(mensagem):
+#     bot.set_state(mensagem.from_user.id, MyStates.inicial, mensagem.chat.id)
+#     bot.send_message(mensagem.chat.id, msginicial)
+
+
+
+# @bot.message_handler(state = MyStates.inicial,func=verificar)
+# def responder(mensagem):
+#     print("Aqui está a mensagem:  ",mensagem)
+
+#     response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
+#     print('response {},intent {}'.format(response,intent))
+#     if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
+#         if response == 'RA não encontrado, por favor digite seu RA' :
+#             print('set state ra')
+#             bot.set_state(mensagem.from_user.id, MyStates.ra, mensagem.chat.id)
+
+#     bot.send_message(mensagem.chat.id,response)
+
+
+# @bot.message_handler(state = MyStates.ra,func=verificar)
+# def responder(mensagem):
+#     print("state ra")
+#     response, intent = tatuia.tatu_zap.get_reply('matérias do ' + mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
+#     bot.send_message(mensagem.chat.id,response)
+#     #bot.delete_state(mensagem.from_user.id, mensagem.chat.id)
+#     bot.set_state(mensagem.from_user.id, MyStates.inicial, mensagem.chat.id)
+
+
+# #STEP HANDLER
+
+'''
+Função quando o usuário da um /start
+'''
+@bot.message_handler(commands=["start"])
+def inicio(mensagem):
+
+    msg = bot.reply_to(mensagem, msginicial)
+    bot.register_next_step_handler(msg, padrao)
+
+
+
+def padrao(mensagem):
+    try:
+        print('step padrao')
+        print('Aqui está a mensagem: {} '.format(mensagem))
+
+        response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
+        print('response {},intent {}'.format(response,intent))
+        if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
+            msg = bot.reply_to(mensagem,response)
+            if response == 'RA não encontrado, por favor digite seu RA' :
+                print('set state ra')
+                bot.register_next_step_handler(msg, ra)
+            else : bot.register_next_step_handler(msg,padrao)
+        elif intent == 'discinfo':
+            if response == 'Selecionar na lista':
+                search_nome_disc = tatuia.extract_nome_disciplina(mensagem.text)
+                if search_nome_disc:
+                    response = tatuia.get_disciplinas(mensagem.text)
+                    print('response: ', response)
+                    keyboard = telebot.types.InlineKeyboardMarkup() #utilizado para gerar o menu em mensagens do telegram
+                    for disc in response:
+                        keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
+
+                    msg = bot.reply_to(mensagem, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
+                bot.register_next_step_handler(msg,padrao)
+        else:
+            msg = bot.reply_to(mensagem,response)
+            bot.register_next_step_handler(msg,padrao)
+    except Exception as e:
+        bot.reply_to(mensagem, e)
+
+
+def ra(mensagem):
+    try:
+        print("step ra")
+        response, intent = tatuia.tatu_zap.get_reply('matérias do ' + mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
+        msg = bot.reply_to(mensagem,response)
+
+        if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
+            if response == 'RA não encontrado, por favor digite seu RA' :
+                bot.register_next_step_handler(msg, ra)
+            else : bot.register_next_step_handler(msg,padrao)
+        else:
+            bot.register_next_step_handler(msg,padrao)
+
+        #bot.delete_state(mensagem.from_user.id, mensagem.chat.id)
+
+    except Exception as e:
+        bot.reply_to(mensagem, e)
+
+
+# Enable saving next step handlers to file "./.handlers-saves/step.save".
+# Delay=2 means that after any change in next step handlers (e.g. calling register_next_step_handler())
+# saving will hapen after delay 2 seconds.
+bot.enable_save_next_step_handlers(delay=2)
+
+# Load next_step_handlers from save file (default "./.handlers-saves/step.save")
+# WARNING It will work only if enable_save_next_step_handlers was called!
+bot.load_next_step_handlers()
+
+
+#bot.polling()
+
+#bot.add_custom_filter(custom_filters.StateFilter(bot))
+
+
+#bot.infinity_polling(skip_pending=True)
+
+
+bot.infinity_polling()

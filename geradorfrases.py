@@ -5,7 +5,7 @@ import random as random
 def fill_database(database, n):
     random.seed()
     for intent in database['intents']:
-        
+
         if intent["tag"] == 'myclasses':
             # # sinonimo de QUERO
             # list1 = ['quero', 'desejo', 'pretendo', 'cogito', 'exijo', 'necessito', 'preciso', 'procuro', 'interesso-me','','informe','diga','qual é']+['']*10
@@ -35,13 +35,13 @@ def fill_database(database, n):
             list_bus4 = ['sai', 'parte']+['']*2
             # sinonimos de ONIBUS
             list_bus5 = ['o onibus', 'o busao', 'o fretado', 'o transporte', 'a lotação','o circular', 'os fretados','quero ir de fretado','de sa pra sbc','quero ir de sa']
-            
+
             for i in range(n):
                 a = random.choice(list_bus1)+' '+random.choice(list_bus2)+' '+random.choice(list_bus3)+' '+random.choice(list_bus4)+' '+random.choice(list_bus5)
                 if a not in intent['patterns'] and a != "    ":
                     intent['patterns'].append (a)
-                else: i = i-1                
-                    
+                else: i = i-1
+
         if intent["tag"] == 'discinfo':
             list_disc1 = ['quero', 'desejo', 'pretendo', 'necessito', 'preciso', 'procuro']+['']*5
             list_disc2 = ['saber', 'entender', 'me informar', 'conhecer']+['']*3
@@ -50,9 +50,10 @@ def fill_database(database, n):
 
             for i in range(n):
                 a = random.choice(list_disc1)+' '+random.choice(list_disc2)+' '+random.choice(list_disc3)+' '+random.choice(list_disc4)
-                if a != "   ":
+                if a not in intent['patterns'] and a != "   ":
                     intent['patterns'].append (a)
-                
+                else: i = i-1
+
         if intent["tag"] == 'ru':
             list_disc1 = ['quero', 'desejo', 'pretendo', 'necessito', 'preciso', 'procuro']+['']*6
             list_disc2 = ['saber', 'entender', 'me informar', 'conhecer']+['']*4
@@ -60,9 +61,10 @@ def fill_database(database, n):
 
             for i in range(n):
                 a = random.choice(list_disc1)+' '+random.choice(list_disc2)+' '+random.choice(list_disc3)
-                if a != "  ":
+                if a not in intent['patterns'] and a != "  ":
                     intent['patterns'].append (a)
-                    
+                else: i = i-1
+
         if intent["tag"] == 'welcome':
             list_wel1 = ['oi','ola','salve','eae', 'hey', 'opa']+[""]*3
             list_wel2 = ['bom dia','boa tarde','boa noite', 'como vai', 'tudo bem', 'como voce esta']+[""]*3
@@ -72,7 +74,8 @@ def fill_database(database, n):
                 a = random.choice(list_wel1)+' '+random.choice(list_wel2)+' '+random.choice(list_wel3)
                 if a != "  ":
                     intent['patterns'].append (a)
-                
+                else: i = i-1
+
     return database
 
 def fill_treino(database, n):
@@ -92,12 +95,12 @@ def fill_treino(database, n):
         if intent["tag"] == 'businfo':
             list_bus1 = ['quero saber','informe','qual','que hora','quando','quando sai','quero que sai','vai sair', 'sairá']+['']*6
             list_bus2 = ['fretado','fretados','onibus','busao','lotação']
-            
+
             for i in range(n):
                 a = random.choice(list_bus1)+' '+random.choice(list_bus2)
                 if(a != " "):
                     intent['patterns'].append (a)
-                
+
         if intent["tag"] == 'discinfo':
             list_disc1 = ['quero saber','informe','qual','que']+['']*3
             list_disc2 = ['ementa','plano de ensino','requisitos', 'bibliografia']
@@ -191,9 +194,10 @@ database = {
             }
         ]
     }
-# n = 15
+# n = 500
 # database =fill_treino(database, n)
-# #print (database['intents'][4]['patterns'][0:10])
+# for i in range(5):
+#     print (len(database['intents'][i]['patterns']))
 
 
 

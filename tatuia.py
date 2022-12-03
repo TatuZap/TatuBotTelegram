@@ -68,8 +68,9 @@ class TatuIA:
             print(">>> Build do TatuBot")
             if self.model:
                 self.__train()
-            self.model = self.__simple_ann()
-            self.__train()
+            else:
+                self.model = self.__simple_ann()
+                self.__train()
             os.mkdir(complete_path)
             self.model.save(complete_path + "/model")
             print(">>> Fim do Build, TatuBot dumped")
@@ -106,7 +107,7 @@ class TatuIA:
         X = tokenizer.texts_to_sequences(df['texto-lstm'].values)
         self.X = pad_sequences(X, maxlen=MAX_LEN)
         self.Y = pd.get_dummies(df['classe']).values
-        
+
 
         model = Sequential()
         model.add(Embedding(MAX_LEN, 32, input_length=self.X.shape[1]))
@@ -186,58 +187,6 @@ class TatuIA:
 
 
 
-database = {
-    "intents": [
-        {
-            "tag": "welcome",
-            "patterns": [],
-            "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Olá, o que você gostaria de saber?","Olá, sobre o que você gostaria de saber?","Oi, diga para mim o que você quer saber", "Oi, diga no que posso te ajudar",
-           "Olá, diz pra mim, o que você gostaria de saber?", "Sou seu assistente virtual, o que você gostaria de saber?", "Serei seu assistente virtual, diga pra mim o que deseja",
-           "O que você gostaria de saber?","No que posso te ajudar?"],
-            "context": [""]
-        },
-        {
-            "tag": "myclasses",
-            "patterns": [],
-            "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
-            "context": [""]
-        },
-        {
-            "tag": "businfo",
-            "patterns": [],
-            "responses": ["Esses são os horários dos fretados","Horarios dos fretados: ", "Ah, você quer saber o horário dos fretados"],
-            "context": [""]
-        },
-        {
-            "tag": "discinfo",
-            "patterns": [],
-            "responses": ['Informações da disciplina X','Para a disciplina Y, as informações são as seguintes: '],
-            "context": [""]
-        },
-        {
-            "tag": "ru",
-            "patterns": [],
-            "responses": ['O cárdapio de hoje é esse:','Para o almoço temos:', 'Para o jantar teremos:'], # provisório
-            "context": [""]
-        },
-        {
-            "tag": "anything_else",
-            "patterns": [],
-            "responses": ["Desculpe, não entendi o que você falou, tente novamente!","Me desculpe, digite novamente o que deseja","Desculpe! Não entendi o que você quis dizer","Sinto muito, não entendi a sua solicitação, tente novamente",
-                "Não compreendi a sua solicitação, talvez eu possa te ajudar","Não entendi a sua solicitação, digite novamente","Não consegui entender o que você digitou, tente novamente",
-                "Por favor, digite novamente o que deseja","Por favor, digite novamente!","Peço, por gentileza, que digite novamente"],
-            "context": [""]
-        }
-    ]
-    }
-
-
-database = gerador.fill_database(database,500)
-# demo da funcionalide da classe utils para mensagem
-message_utils = MessageUtils()
-message_utils.process_training_data(database,None)
-
-tatu_zap = TatuIA("", message_utils=message_utils,lstm=False)
 
 #tatu_zap.print_model()
 
@@ -252,7 +201,7 @@ def turmas(RA):
     QUERY = {"RA": str(RA)}
     string = ""
     result = list(turmas_por_ra_collection.find(QUERY))
-    if result == []: return 'RA não encontrado, tente novamente'
+    if result == []: return 'RA não encontrado, por favor digite seu RA'
     lista = result[0]["TURMAS"]
     for res in lista:del res['_id']
     lista_clean = [dict(item) for item in {tuple(dict.items()) for dict in lista}]
@@ -290,7 +239,7 @@ def get_fretado(message):
 
 def extract_nome_disciplina(message):
     """
-    Retorna a extração do nome de disciplinas de uma string, necessario utilizar .group(5) para acessar o nome 
+    Retorna a extração do nome de disciplinas de uma string, necessario utilizar .group(5) para acessar o nome
     """
     msg = unidecode.unidecode(message).lower() #limpa caracteres especiais da mensagem e coloca em lower
     return re.search(r'(ementa|informacoes|requisitos|bibliografia|(plano de ensino)|(plano ensino)).?(sobre|de)?(.*?)$',string=msg) # retorna None se não encontrou nada dentro do padrão
@@ -308,14 +257,15 @@ def get_disciplinas(message):
 
 def get_disciplina_selecionada(message):
     """
-    Retorna a string formatada para a disciplina mais próxima (similaridade de texto) ao nome extraido da string 
+    Retorna a string formatada para a disciplina mais próxima (similaridade de texto) ao nome extraido da string
     """
     lista_disc = get_disciplinas(message)
     nova_mensagem = extract_nome_disciplina(message).group(5)
     print('nome ', nova_mensagem)
+    if nova_mensagem == '': return None
     similar_discipline = None
     for disc in lista_disc:
-        sim_nome = SequenceMatcher(None, nova_mensagem, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco 
+        sim_nome = SequenceMatcher(None, nova_mensagem, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco
         #sim_apelido = similar(nova_mensagem, disc['apelido'])
         print('similarity ', sim_nome)
         if sim_nome > 0.6:
@@ -323,8 +273,10 @@ def get_disciplina_selecionada(message):
         #if sim_apelido > 0.8:
         #    similar_discipline = disc
         print(disc['disciplina'] + ' ' + disc['sigla'] )
-    texto_saida = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
-    print(texto_saida)
+
+    texto_disciplina = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
+    print(texto_disciplina)
+    texto_saida = texto_disciplina if similar_discipline else 'Selecionar na lista'
     return texto_saida
 
 def get_ru_hoje(message):
@@ -345,50 +297,57 @@ def get_ru_hoje(message):
     else: resposta = 'Falha na recuperação do cardápio'
     return resposta
 
-# print(">>> Demo da funcionalidade de reconhecimento de intenção do TatuBot.")
-# print(">>> Inicialmente a I.A foi treinada com cinco intenções (welcome,myclasses,businfo,discinfo,ru).")
-# print(">>> Envie uma mensagem para o TatuBot!")
-# while True:
-#     try:
-#         user_message = input("user: ")
-#         response, intent = tatu_zap.get_reply(user_message)
-#         if intent == "myclasses":
-#             user_ra = tatu_zap.message_utils.is_ra(user_message)
-#             if user_ra:
-#                 turmas(user_ra)
-#             else:
-#                 while True:
-#                     print("Tatu: Você solicitou informações sobre suas turmas, agora insira seu ra!")
-#                     expected_ra = input('user: ')
-#                     user_ra = tatu_zap.message_utils.is_ra(expected_ra)
-#                     if user_ra:
-#                         #print("Tatu: Já estou processando as turmas para o ra {}.".format(user_ra))
-#                         turmas(user_ra)
-#                         break
-#         elif intent == "businfo":
-#             user_localtime =  tatu_zap.message_utils.check_origin(user_message)
-#             while True:
-#                 if user_localtime:
-#                     print("Tatu: Já estou buscando o horário de partida do próximo fretado que sai de {} para {} as {}".format(user_localtime[0], user_localtime[1], user_localtime[2]))
-#                     break
-#                 else :
-#                     print("Tatu: Por favor, para conseguirmos identificar qual fretado você quer, diga de onde você quer ir (de SA / de SBC) para onde (para SA/ para SBC)")
-#                     expected_local = input('user: ')
-#                     user_localtime =  tatu_zap.message_utils.check_origin(expected_local)
-                    
-#         elif intent == "discinfo": #TODO
-#             print("Tatu: Digite apenas o nome da matéria (ou sigla) que você deseja! ")
-#             expected_disc = input()
-#             print("Tatu: Estou buscando a ementa da disciplina {}.".format(expected_disc))
-
-#         else:
-#             print("Tatu: {}.".format(response)) 
-
-#     except KeyboardInterrupt:
-#         break
 
 
+database = {
+    "intents": [
+        {
+            "tag": "welcome",
+            "patterns": [],
+            "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Olá, o que você gostaria de saber?","Olá, sobre o que você gostaria de saber?","Oi, diga para mim o que você quer saber", "Oi, diga no que posso te ajudar",
+           "Olá, diz pra mim, o que você gostaria de saber?", "Sou seu assistente virtual, o que você gostaria de saber?", "Serei seu assistente virtual, diga pra mim o que deseja",
+           "O que você gostaria de saber?","No que posso te ajudar?"],
+            "context": [""]
+        },
+        {
+            "tag": "myclasses",
+            "patterns": [],
+            "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
+            "context": [""]
+        },
+        {
+            "tag": "businfo",
+            "patterns": [],
+            "responses": ["Esses são os horários dos fretados","Horarios dos fretados: ", "Ah, você quer saber o horário dos fretados"],
+            "context": [""]
+        },
+        {
+            "tag": "discinfo",
+            "patterns": [],
+            "responses": ['Informações da disciplina X','Para a disciplina Y, as informações são as seguintes: '],
+            "context": [""]
+        },
+        {
+            "tag": "ru",
+            "patterns": [],
+            "responses": ['O cárdapio de hoje é esse:','Para o almoço temos:', 'Para o jantar teremos:'],
+            "context": [""]
+        },
+        {
+            "tag": "anything_else",
+            "patterns": [],
+            "responses": ["Desculpe, não entendi o que você falou, tente novamente!","Me desculpe, digite novamente o que deseja","Desculpe! Não entendi o que você quis dizer","Sinto muito, não entendi a sua solicitação, tente novamente",
+                "Não compreendi a sua solicitação, talvez eu possa te ajudar","Não entendi a sua solicitação, digite novamente","Não consegui entender o que você digitou, tente novamente",
+                "Por favor, digite novamente o que deseja","Por favor, digite novamente!","Peço, por gentileza, que digite novamente"],
+            "context": [""]
+        }
+    ]
+    }
 
-# if __name__ == "__main__":
-#     main()
 
+database = gerador.fill_database(database,500)
+# demo da funcionalide da classe utils para mensagem
+message_utils = MessageUtils()
+message_utils.process_training_data(database,None)
+
+tatu_zap = TatuIA("", message_utils=message_utils,lstm=False)
