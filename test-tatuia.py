@@ -65,7 +65,7 @@ class Testtatuia(unittest.TestCase):
         try:
             result,intent = tatuia.tatu_zap.get_reply('qual o próximo fretade de sa pra sbc')
             self.assertEqual(intent, 'businfo',"Não apresentou a intent correta")
-            self.assertGreaterEqual(result.find('Linha: ' or 'fretado adequado' or 'fretados não funcionam'), 0,"Não apresentou a mensagem para as fretados.\n"+result)
+            self.assertGreaterEqual(result.find('Linha: ' and 'fretado adequado' ), 0,"Não apresentou a mensagem para as fretados.\n"+result)
         except Exception as e:
             self.fail("A mensagem fretados não deve retornar Erro")
 

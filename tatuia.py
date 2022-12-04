@@ -292,30 +292,40 @@ def get_disciplinas(message):
     Retorna a lista de disciplinas similares ao nome encontrado na string 
     """
     search_nome_disc = extract_nome_disciplina(message)
-    nova_mensagem = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
+    nome_disc = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
     #         mensagem.text.lower().split('ementa ')[1]
-    apelido_matéria = ''.join([ w[0] for w in nova_mensagem.split() if w not in STOPWORDS]) #gera o apelido da matéria pedida
+    if len (nome_disc) < 6:
+        nome_disc = nome_disc.replace(' ','')
+        apelido_matéria = nome_disc
+    else: apelido_matéria = ''.join([ w[0] for w in nome_disc.split() if w not in STOPWORDS]) #gera o apelido da matéria pedida
     print('apelido ', apelido_matéria)
     return list(catalogo_model.find_by_apelido(apelido_matéria)) #retorna a lista de disciplina com tal apelido
+
 
 def get_disciplina_selecionada(message):
     """
     Retorna a string formatada para a disciplina mais próxima (similaridade de texto) ao nome extraido da string
     """
-    lista_disc = get_disciplinas(message)
-    nova_mensagem = extract_nome_disciplina(message).group(5)
-    print('nome ', nova_mensagem)
-    if nova_mensagem == '': return None
+    nome_disc = extract_nome_disciplina(message).group(5)
+    print('nome ', nome_disc)
     similar_discipline = None
-    for disc in lista_disc:
-        sim_nome = SequenceMatcher(None, nova_mensagem, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco
-        #sim_apelido = similar(nova_mensagem, disc['apelido'])
-        print('similarity ', sim_nome)
-        if sim_nome > 0.6:
-            similar_discipline = disc
-        #if sim_apelido > 0.8:
-        #    similar_discipline = disc
-        print(disc['disciplina'] + ' ' + disc['sigla'] )
+    nome_disc = nome_disc.replace(' ','')
+    if len(nome_disc) < 6 : #se menor que 6 testa para siglas
+        lista_apelido = list(catalogo_model.find_by_apelido(nome_disc)) #retorna a lista de disciplina com tal apelido
+        if lista_apelido:
+            return 'Selecionar na lista'
+    else:
+        lista_disc = get_disciplinas(message)
+        if nome_disc == '': return None
+        for disc in lista_disc:
+            sim_nome = SequenceMatcher(None, nome_disc, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco
+            #sim_apelido = similar(nome_disc, disc['apelido'])
+            print('similarity ', sim_nome)
+            if sim_nome > 0.6:
+                similar_discipline = disc
+            #if sim_apelido > 0.8:
+            #    similar_discipline = disc
+            print(disc['disciplina'] + ' ' + disc['sigla'] )
 
     texto_disciplina = "Disciplina:\n {}, \nTPI: \n{}, \nSigla:\n {},\nRecomendacoes: {},\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
     print(texto_disciplina)
