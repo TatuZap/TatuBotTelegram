@@ -211,16 +211,59 @@ def turmas(RA):
         nome = disciplina['DISCIPLINA - TURMA']
 
         if teoria == 0:
-            string += 'Disciplina: {}, Horário Prática: {}\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) 
+            string += 'Disciplina: {}\n, Horário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
         if pratica == 0:
-            string += 'Disciplina: {}, Horário Teoria: {}\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
+            string += 'Disciplina: {}\n, Horário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
     return string
+
+def get_materias(message):
+    ra = extract_ra(message)
+    dia_semana = extract_dia_semana(message)
+    tempo = extract_tempo(message)
+    if ra:
+        # materias_model.next_aula(horario,dia) #horario do dateTime
+        # materias_model.now_aula(horario,dia)
+        if dia_semana:
+            return materias_model.get_materias(ra,dia_semana)
+        if tempo:
+            if tempo == 'agora':
+                return materias_model.now_aula(ra,tempo)
+            if tempo == 'proxima':
+                return materias_model.next_aula(ra,tempo)
+            if tempo == 'hoje':
+                hoje = datetime.now().weekday()
+                return materias_model.get_materias(ra,hoje)
+            if tempo == 'amanha':
+                amh = datetime.now().weekday()+1
+                return materias_model.get_materias(ra,amh)
+
+        else: 
+            #return materias_model.get_materias(ra)
+            return ''
+    else: return 'Por favor, digite seu RA'
 
 def extract_ra(message):
     """
     Retorna o RA extraido de uma string.
     """
     return message_utils.is_ra(message)
+
+def extract_dia_semana(message):
+    a = re.findall('segunda|terca|quarta|quinta|sexta|sabado', message)
+    return convert_dia(a[0]) if a != [] else None
+
+def extract_tempo(message):
+    a = re.findall('agora|proxima|hoje|amanha', message)
+    return a
+
+
+
+def convert_dia(message):
+    lista = list(enumerate(["segunda","terca","quarta","quinta","sexta","sabado"]))
+    for i in lista:
+        if i[1] == message:
+            return i[0]
+    return -1
 
 def extract_origem_destino(message):
     """
@@ -274,7 +317,7 @@ def get_disciplina_selecionada(message):
         #    similar_discipline = disc
         print(disc['disciplina'] + ' ' + disc['sigla'] )
 
-    texto_disciplina = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
+    texto_disciplina = "Disciplina:\n {}, \nTPI: \n{}, \nSigla:\n {},\nRecomendacoes: {},\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
     print(texto_disciplina)
     texto_saida = texto_disciplina if similar_discipline else 'Selecionar na lista'
     return texto_saida
