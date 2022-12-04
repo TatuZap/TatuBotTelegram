@@ -18,8 +18,7 @@ class Testtatuia(unittest.TestCase):
             result,intent = tatuia.tatu_zap.get_reply('olá tatu')
             self.assertEqual(intent, 'welcome',"Não apresentou a intent correta")
         except Exception as e:
-            print(e)
-            self.fail("A mensagem não deve retornar Erro")
+            self.fail("A mensagem welcome não deve retornar Erro")
 
     def test_anything(self):
         """
@@ -30,8 +29,7 @@ class Testtatuia(unittest.TestCase):
             result,intent = tatuia.tatu_zap.get_reply('qual o resultado do jogo do Brasil e Camarões')
             self.assertEqual(intent, 'anything_else',"Não apresentou a intent correta")
         except Exception as e:
-            print(e)
-            self.fail("A mensagem não deve retornar Erro")
+            self.fail("A mensagem anything não deve retornar Erro")
 
     def test_myclasses(self):
         """
@@ -41,10 +39,9 @@ class Testtatuia(unittest.TestCase):
         try:
             result,intent = tatuia.tatu_zap.get_reply('qual as matérias do ra 11201721679')
             self.assertEqual(intent, 'myclasses',"Não apresentou a intent correta")
-            self.assertEqual(result.find('Disciplina:'), not -1,"Não apresentou a lista de disciplinas esperadas")
+            self.assertGreaterEqual(result.find('Disciplina:'), 0,"Não apresentou a lista de disciplinas esperadas")
         except Exception as e:
-            print(e)
-            self.fail("A mensagem não deve retornar Erro")
+            self.fail("A mensagem myclasses não deve retornar Erro")
     def test_myclasses_notRA(self):
         """
             A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
@@ -55,21 +52,19 @@ class Testtatuia(unittest.TestCase):
             self.assertEqual(intent, 'myclasses',"Não apresentou a intent correta")
             self.assertEqual(result, 'RA não encontrado, por favor digite seu RA',"Não apresentou a mensagem para quando não informou o RA.")
         except Exception as e:
-            print(e)
-            self.fail("A mensagem não deve retornar Erro")
+            self.fail("A mensagem myclassesNRA não deve retornar Erro")
 
     def test_fretados(self):
         """
             A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
         """
-        fretados_model.populate_database()
+        #fretados_model.populate_database()
         try:
             result,intent = tatuia.tatu_zap.get_reply('qual o próximo fretade de sa pra sbc')
             self.assertEqual(intent, 'businfo',"Não apresentou a intent correta")
-            self.assertEqual(result.find('linha:'), not -1,"Não apresentou a mensagem para as fretados.")
+            self.assertGreaterEqual(result.find('linha:' and 'fretado adequado'), 0,"Não apresentou a mensagem para as fretados.\n"+result)
         except Exception as e:
-            print(e)
-            self.fail("A mensagem não deve retornar Erro")
+            self.fail("A mensagem fretados não deve retornar Erro")
 
     def test_discinfo(self):
         """
@@ -78,11 +73,12 @@ class Testtatuia(unittest.TestCase):
         fretados_model.populate_database()
         try:
             result,intent = tatuia.tatu_zap.get_reply('quero saber a ementa de fisica quantica')
+            print('res: ',result)
             self.assertEqual(intent, 'discinfo',"Não apresentou a intent correta")
-            self.assertEqual(result.find('Ementa: Bases experimentais da Mecânica Quântica'), not -1,"Não apresentou a ementa para fisica quantica.")
+            self.assertGreaterEqual(result.find('Ementa: Bases experimentais da Mecânica Quântica'),0,"Não apresentou a ementa para fisica quantica.")
+
         except Exception as e:
-            print(e)
-            self.fail("A mensagem não deve retornar Erro")
+            self.fail("A mensagem discinfo não deve retornar Erro")
     # def test_insert_item_inserts(self):
     #     """
     #         A função de inserção de um único elemento não deve retornar erros.

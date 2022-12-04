@@ -344,10 +344,12 @@ database = {
     ]
     }
 
+print("filling database")
+database = gerador.fill_database(database,50)
 
-database = gerador.fill_database(database,500)
 # demo da funcionalide da classe utils para mensagem
 message_utils = MessageUtils()
+print("processing database data")
 message_utils.process_training_data(database,None)
 
 tatu_zap = TatuIA("", message_utils=message_utils,lstm=False)

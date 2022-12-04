@@ -3,7 +3,7 @@ import random as random
 
 
 def fill_database(database, n):
-    random.seed()
+    random.seed(42)
     for intent in database['intents']:
 
         if intent["tag"] == 'myclasses':
