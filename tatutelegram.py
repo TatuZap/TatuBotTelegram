@@ -224,7 +224,7 @@ def padrao(mensagem):
                         keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
 
                     msg = bot.reply_to(mensagem, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
-                else: msg = bot.reply_to(mensagem,response)
+            else: msg = bot.reply_to(mensagem,response)
 
             bot.register_next_step_handler(msg,padrao)
         else:
@@ -266,6 +266,7 @@ bot.load_next_step_handlers()
 #bot.polling()
 
 #bot.add_custom_filter(custom_filters.StateFilter(bot))
+bot.enable_save_next_step_handlers(delay=2)
 
 
 #bot.infinity_polling(skip_pending=True)

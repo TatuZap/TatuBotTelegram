@@ -230,7 +230,7 @@ def extract_origem_destino(message):
 
 def get_fretado(message):
     """
-    Retorna o próximo fretado (formatado para uma String 'Linha e Horário de Partida') para origem, destino, horário atual,horário limite (+1h) e dia da semana. 
+    Retorna o próximo fretado (formatado para uma String 'Linha e Horário de Partida') para origem, destino, horário atual,horário limite (+1h) e dia da semana.
     """
     user_localtime = extract_origem_destino(message)
     if not user_localtime : return 'não encontrei a origem ou destino'
@@ -284,9 +284,11 @@ def get_ru_hoje(message):
     Retorna as informações para o cardápio do RU para o dia de hoje
     """
     tipo = 0
-    saida = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo))[0]
+    cardapio = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo))
+    if cardapio == []: return 'O Restaurante Universitário não funciona aos domingos'
+    saida = cardapio[0] if cardapio != [] else ''
     if saida:
-        jantar = re.findall(r"jantar|noite", message)
+        jantar = re.findall(r"jantar|janta|noite", message)
         almoço = re.findall(r"almoço|manha", message)
         if jantar:
             resposta = "Jantar:{}\nSalada: {}\nSobremesa: {}".format(saida['jantar'],saida['saladas'],saida['sobremesas'])
