@@ -272,14 +272,24 @@ def extract_origem_destino(message):
     """
     Retorna uma lista com origem, destino, horário atual, horário limite (+1h) e dia da semana
     """
-    return message_utils.check_origin(message)
+    return message_utils.check_origin(unidecode.unidecode(message).lower())
 
 def get_fretado(message):
     """
     Retorna o próximo fretado (formatado para uma String 'Linha e Horário de Partida') para origem, destino, horário atual,horário limite (+1h) e dia da semana.
     """
     user_localtime = extract_origem_destino(message)
-    if not user_localtime : return 'não encontrei a origem ou destino'
+    if not user_localtime :
+        possibilides = ["DE SA PARA SBC:", "DE SBC PARA SA:", "DE SBC PARA SBC"]
+        saida = ""
+
+        for i in possibilides:       
+            user_localtime = extract_origem_destino(i)
+            response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
+            aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else "Não existem fretados dentro de uma hora para ir " + i
+            saida += aux
+        return saida
+
     response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
     return "Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida']) if response else None
 
