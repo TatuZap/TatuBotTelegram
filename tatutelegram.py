@@ -50,13 +50,6 @@ msginicial = 'Olá, esse é o TatuZap. Aqui você pode ficar sabendo sobre a sua
 
 
 
-# '''
-#     Função quando o usuário da um /start
-# '''
-# @bot.message_handler(commands=["start"])
-# def inicio(mensagem):
-#     bot.send_message(mensagem.chat.id, msginicial)
-
 def verificar(mensagem):
     return True
 
@@ -166,9 +159,7 @@ def ra(mensagem):
 @bot.callback_query_handler(func=lambda call: True)
 def test_callback(call): # <- passes a CallbackQuery type object to your function
         userMessage = call.data
-        saida = list(catalogo_model.find_by_sigla(userMessage))[0]
-        print('saida: ',saida)
-        texto = "Disciplina: {}, TPI: {}, Sigla: {},\nRecomendacoes: {},\nEmenta: {}".format(saida['disciplina'],saida['TPI'],saida['sigla'],saida['recomendacoes'],saida['ementa'])
+        texto = tatuia.get_disciplina_codigo(userMessage)
 
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=texto)
 

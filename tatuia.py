@@ -327,7 +327,14 @@ def get_disciplina_selecionada(message):
             #    similar_discipline = disc
             print(disc['disciplina'] + ' ' + disc['sigla'] )
 
-    texto_disciplina = "Disciplina:\n {}, \nTPI: \n{}, \nSigla:\n {},\nRecomendacoes: {},\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
+    texto_disciplina = "Disciplina: {}\n\nTPI: {}    Sigla: {}\n\nRecomendacoes: {}\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
+    print(texto_disciplina)
+    texto_saida = texto_disciplina if similar_discipline else 'Selecionar na lista'
+    return texto_saida
+
+def get_disciplina_codigo(message):
+    similar_discipline = list(catalogo_model.find_by_sigla(message))[0]
+    texto_disciplina = "Disciplina: {}\n\nTPI: {}    Sigla: {}\n\nRecomendacoes: {}\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
     print(texto_disciplina)
     texto_saida = texto_disciplina if similar_discipline else 'Selecionar na lista'
     return texto_saida

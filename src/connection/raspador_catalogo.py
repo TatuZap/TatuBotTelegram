@@ -6,7 +6,7 @@ import numpy as np
 from nltk.corpus import stopwords
 
 STOPWORDS = stopwords.words('portuguese')
-CATALOGO_URL = "https://prograd.ufabc.edu.br/pdf/catalogo_disciplinas_graduacao_2021_2022_0722.xlsx"
+CATALOGO_URL = "https://prograd.ufabc.edu.br/pdf/catalogo_disciplinas_graduacao_2021_2022.xlsx"
 CATALOGO_XLSX  = requests.get(CATALOGO_URL).content
 catalogo_df = pd.read_excel(CATALOGO_XLSX)
 
