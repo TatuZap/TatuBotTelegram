@@ -41,7 +41,7 @@ class Testtatuia(unittest.TestCase):
         try:
             result,intent = tatuia.tatu_zap.get_reply('qual as matérias do ra 11201721679')
             self.assertEqual(intent, 'myclasses',"Não apresentou a intent correta")
-            self.assertGreaterEqual(result.find('Disciplina:'), 0,"Não apresentou a lista de disciplinas esperadas")
+            self.assertGreaterEqual(result.find('DISCIPLINA:'), 0,"Não apresentou a lista de disciplinas esperadas")
         except Exception as e:
             self.fail("A mensagem myclasses não deve retornar Erro")
 

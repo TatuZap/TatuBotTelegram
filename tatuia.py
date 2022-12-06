@@ -211,9 +211,12 @@ def turmas(RA):
         nome = disciplina['DISCIPLINA - TURMA']
 
         if teoria == 0:
-            string += 'Disciplina: {}\n, Horário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
-        if pratica == 0:
-            string += 'Disciplina: {}\n, Horário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
+            string += 'DISCIPLINA: {}\nHorário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
+        elif pratica == 0:
+            string += 'DISCIPLINA: {}\nHorário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
+        else:
+            string += 'DISCIPLINA: {}\nHorário Teoria: {}\nHorário Prática: {}\n\n'.format(nome,teoria,pratica)
+
     return string
 
 def get_materias(message):

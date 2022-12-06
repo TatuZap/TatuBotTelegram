@@ -180,13 +180,11 @@ class MessageUtils:
     '''
 
     def check_origin(self, message):
-        lista = [] # Origen, Destino, Hora,Minuto
-        origemSA = ['de santo andre','de sa','de sta']
-        origemSBC = ['de sao bernardo','de sbc','de sao bernardo']
-        destinoSA = ['para santo andre','para sa','para sta','pra santo andre','pra sa','pra sta']
-        destinoSBC = ['para sao bernardo','para sbc','pra sao bernardo','pra sbc']
-        origem = 'SA' if any(element in unidecode.unidecode(message.lower()) for element in origemSA) else 'SBC' if any(element in unidecode.unidecode(message.lower()) for element in origemSBC) else None
-        destino = 'SBC' if any(element in unidecode.unidecode(message.lower()) for element in destinoSBC) else 'SA' if any(element in unidecode.unidecode(message.lower()) for element in destinoSA) else None
+        lista = [] # Origem, Destino, Horario atual ,Horario atual + 1 hora (limite), Dia da semana (0-6)
+
+        origem = 'SA' if re.findall('de.(sa|sta|santo andre)', message) else 'SA' if re.findall('(sa|sta|santo andre).(para|pra)', message) else 'SBC' if re.findall('de.(sbc|sao bernardo)', message) else 'SBC'if re.findall('(sbc|sao bernardo).(para|pra)', message) else None
+
+        destino = 'SA' if re.findall('(para|pra).(sa|sta|santo andre)', message) else 'SBC' if re.findall('(para|pra).(sbc|sao bernardo)', message) else None
 
         if origem and destino :
             now = datetime.now()

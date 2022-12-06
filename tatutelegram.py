@@ -46,7 +46,7 @@ bot = telebot.TeleBot(CHAVE_API) #carrega o bot com a key
 
 #msginicial = 'Bem-Vindo ao TatuBot.\n Nosso bot possui como funcionalidades informar quais as salas e horários das disciplinas em que você está matriculado, informações sobre ementa de disciplinas (nome), qual o próximo horário e número do fretado, qual o cardápio do RU'
 
-msginicial = 'Olá, esse é o TatuZap. Aqui você pode ficar sabendo sobre a sua grade (turmas, salas e horários), cardápio do RU, fretados (horários de partida), disciplinas da UFABC, etc. Basta que você digite o que deseja.\n Alguns exemplos de uso:\n- Grade: quero saber as minhas turmas, ra 1234567891011\n- Cardápio RU: O que tem para o almoço/jantar?\n- Fretados: Qual o próximo fretado de SA para SBC?\n'
+msginicial = 'Olá, esse é o TatuZap. Aqui você pode ficar sabendo sobre a sua grade (turmas, salas e horários), cardápio do RU, fretados (horários de partida), disciplinas da UFABC, etc. Basta digitar o que deseja.\n Alguns exemplos de uso:\n- Grade: quero saber as minhas turmas, ra 1234567891011\n- Cardápio RU: O que tem para o almoço/jantar?\n- Fretados: Qual o próximo fretado de SA para SBC?\n'
 
 
 
