@@ -1,4 +1,4 @@
-from src.tatuia import TatuIA 
+from tatuia import TatuIA 
 from messageutils import MessageUtils # nossa classe de pré-processamento
 from sklearn.metrics import classification_report
 
@@ -10,35 +10,6 @@ import geradorfrases as gerador
 
 
 def main():
-    # database = {
-    #     "intents": [
-    #             {
-    #                 "tag": "welcome",
-    #                 "patterns": ['oi','ola','boa tarde','bom dia','boa noite','saudações','fala','eae','salve'],
-    #                 "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Salve, qual foi ?", "Manda pro pai, Lança a braba", "No que posso te ajudar ?"],
-    #                 "context": [""]
-    #             },
-    #             {
-    #                 "tag": "my_classes",
-    #                 "patterns": ['materias', 'materia', 'sala', 'disciplina','professor','local','turma','turmas','professores','disciplinas','salas','aula','aulas','grade','horario','classe','classes','cadeira','cadeiras','sala de aula','local de estudo','disciplinas matriculadas'],
-    #                 "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
-    #                 "context": [""]
-    #             },
-    #             {
-    #                 "tag": "bus_info",
-    #                 "patterns": ['fretado','fretados','onibus','busao','lotação','coletivo','circular','transporte','carro','veículo'],
-    #                 "responses": ["Fretados","Horarios Fretado"], #provisório
-    #                 "context": [""]
-    #             },
-    #             {
-    #                 "tag": "anything_else",
-    #                 "patterns": [],
-    #                 "responses": ["Desculpa, não entendi o que você falou, tente novamente!","Não compreendi a sua solicitação, talvez eu possa te ajudar"],
-    #                 "context": [""]
-    #             }
-    #         ]
-    #     }
-
     database = {
     "intents": [
             {
@@ -89,19 +60,18 @@ def main():
     tatu_zap = TatuIA("", message_utils=message_utils,lstm = False)
     tatu_zap.print_model()
     #tatu_zap.eval_model()
-  
-    
+
     db_test = gerador.fill_treino(database,n)
-    X = []    
+    X = []
     for a in db_test['intents']:
         if a['tag'] != 'anything_else': X += a['patterns'][0:n]
     X = X + gerador.gerar_anything(n)
-    
+
     Y = ['welcome']*n+['myclasses']*n+['businfo']*n+['discinfo']*n+['ru']*n+['anything_else']*n
 
-    
+
     list_predict = [(tatu_zap.get_predict(i)) for i in X]
-        
+
 
     y_true = pd.Series(Y, name='Row_True')
     y_pred = pd.Series(list_predict, name='Col_Pred')
