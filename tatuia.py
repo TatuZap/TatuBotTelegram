@@ -23,7 +23,7 @@ import src.connection.catalogo_model as catalogo_model
 import src.connection.restaurante_model as restaurante_model
 import src.connection.usuario_model as usuario_model
 
-from datetime import datetime 
+from datetime import datetime
 
 
 from unittest import result
@@ -283,7 +283,7 @@ def get_fretado(message):
         possibilides = ["DE SA PARA SBC:", "DE SBC PARA SA:", "DE SBC PARA SBC"]
         saida = ""
 
-        for i in possibilides:       
+        for i in possibilides:
             user_localtime = extract_origem_destino(i)
             response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
             aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else "Não existem fretados dentro de uma hora para ir " + i
@@ -298,16 +298,17 @@ def extract_nome_disciplina(message):
     Retorna a extração do nome de disciplinas de uma string, necessario utilizar .group(5) para acessar o nome
     """
     msg = unidecode.unidecode(message).lower() #limpa caracteres especiais da mensagem e coloca em lower
-    return re.search(r'(ementa|informacoes|requisitos|bibliografia|(plano de ensino)|(plano ensino)).?(sobre|de)?(.*?)$',string=msg) # retorna None se não encontrou nada dentro do padrão
+    return re.search(r'(ementa|informacoes|requisitos|bibliografia|(plano de ensino)|(plano ensino)).?(sobre|de)?(.*)$',string=msg) # retorna None se não encontrou nada dentro do padrão
 
 def get_disciplinas(message):
     """
     Retorna a lista de disciplinas similares ao nome encontrado na string 
     """
     search_nome_disc = extract_nome_disciplina(message)
+    print('nome: ',search_nome_disc)
     nome_disc = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
     #         mensagem.text.lower().split('ementa ')[1]
-    if len (nome_disc) < 6:
+    if len (nome_disc) < 10:
         nome_disc = nome_disc.replace(' ','')
         apelido_matéria = nome_disc
     else: apelido_matéria = ''.join([ w[0] for w in nome_disc.split() if w not in STOPWORDS]) #gera o apelido da matéria pedida
@@ -319,8 +320,11 @@ def get_disciplina_selecionada(message):
     """
     Retorna a string formatada para a disciplina mais próxima (similaridade de texto) ao nome extraido da string
     """
-    nome_disc = extract_nome_disciplina(message).group(5)
-    print('nome ', nome_disc)
+    tmp = extract_nome_disciplina(message)
+    if tmp:
+        nome_disc = tmp.group(5)
+    else: return 'Não entendi sua solicitação'
+    print('nome:', nome_disc)
     similar_discipline = None
     nome_disc = nome_disc.replace(' ','')
     if len(nome_disc) < 6 : #se menor que 6 testa para siglas
@@ -419,9 +423,13 @@ database = {
     ]
     }
 
+
+
 print("filling database")
 database = gerador.fill_database(database,50)
-
+fretado_model.populate_database()
+catalogo_model.populate_database()
+restaurante_model.populate_database()
 # demo da funcionalide da classe utils para mensagem
 message_utils = MessageUtils()
 print("processing database data")
