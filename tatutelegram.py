@@ -74,7 +74,7 @@ def padrao(mensagem):
         response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
         print('response {},intent {}'.format(response,intent))
         if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
-            msg = bot.reply_to(mensagem,response)
+            msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
             if response == 'RA não encontrado, por favor digite seu RA' :
                 print('set state ra')
                 bot.register_next_step_handler(msg, ra)
