@@ -174,7 +174,7 @@ class MessageUtils:
         valid_ra = list(filter(lenght_constraint,possible_ra))
         return None if valid_ra == [] else valid_ra[0]
 
-        
+
     '''
         check_origin: dada uma mensagem, determina qual a origem (sa ou sbc) e qual a origem (sa ou sbc)
     '''
@@ -182,9 +182,9 @@ class MessageUtils:
     def check_origin(self, message):
         lista = [] # Origem, Destino, Horario atual ,Horario atual + 1 hora (limite), Dia da semana (0-6)
 
-        origem = 'SA' if re.findall('de.(sa|sta|santo andre)', message) else 'SA' if re.findall('(sa|sta|santo andre).(para|pra)', message) else 'SBC' if re.findall('de.(sbc|sao bernardo)', message) else 'SBC'if re.findall('(sbc|sao bernardo).(para|pra)', message) else None
+        origem = 'SA' if re.findall(r'(de.)(sa\b|sta|santo andre)', message) else 'SA' if re.findall('(sa|sta|santo andre).(para|pra)', message) else 'SBC' if re.findall('de.(sbc|sao bernardo).', message) else 'SBC'if re.findall('(sbc|sao bernardo).(para|pra).', message) else None
 
-        destino = 'SA' if re.findall('(para|pra).(sa|sta|santo andre)', message) else 'SBC' if re.findall('(para|pra).(sbc|sao bernardo)', message) else None
+        destino = 'SA' if re.findall(r'(para|pra).(sa\b|sta|santo andre)', message) else 'SBC' if re.findall('(para|pra).(sbc|sao bernardo)', message) else None
 
         if origem and destino :
             now = datetime.now()
@@ -198,7 +198,6 @@ class MessageUtils:
             lista.append(datetime.now().weekday())
 
         return None if lista == [] else lista
-        
 
 def main():
     database = {
