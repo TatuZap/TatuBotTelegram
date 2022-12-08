@@ -176,7 +176,7 @@ class TatuIA:
             disc = get_disciplina_selecionada(user_message)
             result = disc if disc else 'Não encontrei a disciplina selecionada'
         elif most_prob_intent == 'ru':
-            result = get_ru_hoje(user_message)
+            result = get_ru(unidecode.unidecode(user_message).lower())
         print('result: ',result)
         return result, most_prob_intent
 
@@ -288,10 +288,10 @@ def get_fretado(message):
             response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
             aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else "Não existem fretados dentro de uma hora para ir " + i
             saida += aux
-        return saida
+        return saida.replace('_',' ')
 
     response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
-    return "Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida']) if response else None
+    return ("Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida'])).replace('_',' ') if response else None
 
 def extract_nome_disciplina(message):
     """
@@ -355,26 +355,31 @@ def get_disciplina_codigo(message):
     texto_saida = texto_disciplina if similar_discipline else 'Selecionar na lista'
     return texto_saida
 
-def get_ru_hoje(message):
+def get_ru(message):
     """
     Retorna as informações para o cardápio do RU para o dia de hoje
     """
     tipo = 0
-    cardapio = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo))
-    if cardapio == []: return 'O Restaurante Universitário não funciona aos domingos'
-    saida = cardapio[0] if cardapio != [] else ''
+    dia = extract_dia_semana(message)
+    cardapio = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo)) if not dia        else list(restaurante_model.find_by_weekday_num(dia,tipo))
+    if cardapio == []: return 'O Restaurante Universitário não funciona nesse dia.'
+    saida = cardapio[0] if cardapio != [] else None
     if saida:
+        if saida['almoço'] == saida['saladas']:
+            return saida['sobremesas'].split('ru são bernardo fechado.')[0]+'\nru são bernardo fechado.'+saida['sobremesas'].split('ru são bernardo fechado.')[1]
         jantar = re.findall(r"jantar|janta|noite", message)
         almoço = re.findall(r"almoço|manha", message)
         if jantar:
-            resposta = "Jantar:{}\nSalada: {}\nSobremesa: {}".format(saida['jantar'],saida['saladas'],saida['sobremesas'])
+            resposta = "***Jantar*** {}\n\n***Salada***\n{}\n\n***Sobremesa***\n{}".format(split_pratoprincipal_opcao(saida['jantar']),saida['saladas'][1:],saida['sobremesas'][1:])
         elif almoço:
-            resposta = "Almoço:{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['saladas'],saida['sobremesas'])
+            resposta = "***Almoço*** {}\n\n***Salada***\n{}\n\n***Sobremesa***\n{}".format(split_pratoprincipal_opcao(saida['almoço']),saida['saladas'][1:],saida['sobremesas'][1:])
         else:
-            resposta = "Almoço:{}\nJanta:{}\nSalada: {}\nSobremesa: {}".format(saida['almoço'],saida['jantar'],saida['saladas'],saida['sobremesas'])
+            resposta = "***Almoço***{}\n\n***Jantar***{}\n\n***Salada***\n{}\n\n***Sobremesa***\n{}".format(split_pratoprincipal_opcao(saida['almoço']),split_pratoprincipal_opcao(saida['jantar']),saida['saladas'][2:],saida['sobremesas'][2:])
     else: resposta = 'Falha na recuperação do cardápio'
     return resposta
 
+def split_pratoprincipal_opcao(message):
+    return '\nPrato Principal'+message.split('opção sem carne')[0].split(' prato principal')[1]+'\nOpção sem CARNE'+(message.split('opção sem carne')[1]).split('guarnição')[0] + '\nGuarnição'+(message.split('opção sem carne')[1]).split('guarnição')[1]
 
 
 database = {

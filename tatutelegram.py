@@ -54,48 +54,14 @@ def verificar(mensagem):
     return True
 
 
-
-#STATE
-
-# '''
-# Função quando o usuário da um /start
-# '''
-# @bot.message_handler(commands=["start"])
-# def inicio(mensagem):
-#     bot.set_state(mensagem.from_user.id, MyStates.inicial, mensagem.chat.id)
-#     bot.send_message(mensagem.chat.id, msginicial)
-
-
-
-# @bot.message_handler(state = MyStates.inicial,func=verificar)
-# def responder(mensagem):
-#     print("Aqui está a mensagem:  ",mensagem)
-
-#     response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
-#     print('response {},intent {}'.format(response,intent))
-#     if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
-#         if response == 'RA não encontrado, por favor digite seu RA' :
-#             print('set state ra')
-#             bot.set_state(mensagem.from_user.id, MyStates.ra, mensagem.chat.id)
-
-#     bot.send_message(mensagem.chat.id,response)
-
-
-# @bot.message_handler(state = MyStates.ra,func=verificar)
-# def responder(mensagem):
-#     print("state ra")
-#     response, intent = tatuia.tatu_zap.get_reply('matérias do ' + mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
-#     bot.send_message(mensagem.chat.id,response)
-#     #bot.delete_state(mensagem.from_user.id, mensagem.chat.id)
-#     bot.set_state(mensagem.from_user.id, MyStates.inicial, mensagem.chat.id)
-
-
-# #STEP HANDLER
-
 '''
 Função quando o usuário da um /start
 '''
 @bot.message_handler(commands=["start"])
+def msg_inicial(mensagem):
+    bot.reply_to(mensagem, msginicial)
+
+@bot.message_handler(commands=["help"])
 def msg_inicial(mensagem):
     bot.reply_to(mensagem, msginicial)
 
@@ -128,7 +94,7 @@ def padrao(mensagem):
 
             bot.register_next_step_handler(msg,padrao)
         else:
-            msg = bot.reply_to(mensagem,response)
+            msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
             bot.register_next_step_handler(msg,padrao)
     except Exception as e:
         bot.reply_to(mensagem, e)

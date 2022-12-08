@@ -91,7 +91,7 @@ class Testtatuia(unittest.TestCase):
             result,intent = tatuia.tatu_zap.get_reply('quero saber qual ru')
             print('res: ',result)
             self.assertEqual(intent, 'ru',"Não apresentou a intent correta")
-            self.assertEqual(result.find('O Restaurante Universitário não')!=(-1) or result.find('prato principal')!=(-1),True,"Não apresentou as mensagens esperadas para a intent do ru."+result)
+            self.assertEqual(result.find('O Restaurante Universitário não')!=(-1) or result.find('Prato Principal')!=(-1),True,"Não apresentou as mensagens esperadas para a intent do ru."+result)
 
         except Exception as e:
             self.fail("A mensagem ru não deve retornar Erro")
