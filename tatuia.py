@@ -211,11 +211,11 @@ def turmas(RA):
         nome = disciplina['DISCIPLINA - TURMA']
 
         if teoria == 0:
-            string += '***{} ***\nHorário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
+            string += '*** {} ***\nHorário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
         elif pratica == 0:
-            string += '***{} ***\nHorário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
+            string += '*** {} ***\nHorário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
         else:
-            string += '***{} ***\nHorário Teoria: {}\nHorário Prática: {}\n\n'.format(nome,teoria,pratica)
+            string += '*** {} ***\nHorário Teoria: {}\nHorário Prática: {}\n\n'.format(nome,teoria,pratica)
 
     return string
 
@@ -302,11 +302,11 @@ def extract_nome_disciplina(message):
 
 def get_disciplinas(message):
     """
-    Retorna a lista de disciplinas similares ao nome encontrado na string 
+    Retorna a lista de disciplinas similares ao nome encontrado na string
     """
     search_nome_disc = extract_nome_disciplina(message)
     print('nome: ',search_nome_disc)
-    nome_disc = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina 
+    nome_disc = search_nome_disc.group(5) #separa a parte da mensagem qual o nome da disciplina
     #         mensagem.text.lower().split('ementa ')[1]
     if len (nome_disc) < 6:
         apelido_matéria = nome_disc
@@ -337,20 +337,20 @@ def get_disciplina_selecionada(message):
             sim_nome = SequenceMatcher(None, nome_disc, disc['disciplina']).ratio() #similaridade entre o nome da disciplina com o encontrado no banco
             #sim_apelido = similar(nome_disc, disc['apelido'])
             print('similarity ', sim_nome)
-            if sim_nome > 0.333:
+            if sim_nome > 0.6:
                 similar_discipline = disc
             #if sim_apelido > 0.8:
             #    similar_discipline = disc
             print(disc['disciplina'] + ' ' + disc['sigla'] )
 
-    texto_disciplina = "Disciplina: {}\n\nTPI: {}    Sigla: {}\n\nRecomendacoes: {}\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
+    texto_disciplina = "***{}***\n\nTPI: {}    Sigla: {}\n\nRecomendacoes: {}\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
     print('texto_saida:',texto_disciplina)
     texto_saida = texto_disciplina if similar_discipline else 'Selecionar na lista'
     return texto_saida
 
 def get_disciplina_codigo(message):
     similar_discipline = list(catalogo_model.find_by_sigla(message))[0]
-    texto_disciplina = "Disciplina: {}\n\nTPI: {}    Sigla: {}\n\nRecomendacoes: {}\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
+    texto_disciplina = "***{}***\n\nTPI: {}    Sigla: {}\n\nRecomendacoes: {}\n\nEmenta: {}".format(similar_discipline['disciplina'],similar_discipline['TPI'],similar_discipline['sigla'],similar_discipline['recomendacoes'],similar_discipline['ementa']) if similar_discipline else None
     print(texto_disciplina)
     texto_saida = texto_disciplina if similar_discipline else 'Selecionar na lista'
     return texto_saida

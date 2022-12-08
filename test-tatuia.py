@@ -41,7 +41,7 @@ class Testtatuia(unittest.TestCase):
         try:
             result,intent = tatuia.tatu_zap.get_reply('qual as matérias do ra 11201721679')
             self.assertEqual(intent, 'myclasses',"Não apresentou a intent correta")
-            self.assertGreaterEqual(result.find('DISCIPLINA:'), 0,"Não apresentou a lista de disciplinas esperadas")
+            self.assertGreaterEqual(result.find('Horário '), 0,"Não apresentou a lista de disciplinas esperadas")
         except Exception as e:
             self.fail("A mensagem myclasses não deve retornar Erro")
 
@@ -61,7 +61,6 @@ class Testtatuia(unittest.TestCase):
         """
             A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
         """
-        #fretados_model.populate_database()
         try:
             result,intent = tatuia.tatu_zap.get_reply('qual o próximo fretade de sa pra sbc')
             self.assertEqual(intent, 'businfo',"Não apresentou a intent correta")
@@ -73,12 +72,12 @@ class Testtatuia(unittest.TestCase):
         """
             A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
         """
-        fretados_model.populate_database()
+
         try:
             result,intent = tatuia.tatu_zap.get_reply('quero saber a ementa de fisica quantica')
             print('res: ',result)
             self.assertEqual(intent, 'discinfo',"Não apresentou a intent correta")
-            self.assertEqual(result.find('Ementa: Bases experimentais da Mecânica Quântica')!=-1,True,"Não apresentou a ementa para fisica quantica.")
+            self.assertEqual(result.find('Ementa: Bases experimentais da Mecânica Quântica')!=-1,True,"Não apresentou a ementa para fisica quantica."+result)
 
         except Exception as e:
             self.fail("A mensagem discinfo não deve retornar Erro")
@@ -86,7 +85,6 @@ class Testtatuia(unittest.TestCase):
         """
             A ia deve retornar a intent correta e a resposta deve ter os elementos esperados.
         """
-        restaurante_model.populate_database()
         try:
             result,intent = tatuia.tatu_zap.get_reply('quero saber qual ru')
             print('res: ',result)

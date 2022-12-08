@@ -46,7 +46,7 @@ bot = telebot.TeleBot(CHAVE_API) #carrega o bot com a key
 
 #msginicial = 'Bem-Vindo ao TatuBot.\n Nosso bot possui como funcionalidades informar quais as salas e horários das disciplinas em que você está matriculado, informações sobre ementa de disciplinas (nome), qual o próximo horário e número do fretado, qual o cardápio do RU'
 
-msginicial = 'Olá, esse é o TatuZap. Aqui você pode ficar sabendo sobre a sua grade (turmas, salas e horários), cardápio do RU, fretados (horários de partida), disciplinas da UFABC, etc. Basta digitar o que deseja.\n Alguns exemplos de uso:\n- Grade: quero saber as minhas turmas, ra 1234567891011\n- Cardápio RU: O que tem para o almoço/jantar?\n- Fretados: Qual o próximo fretado de SA para SBC?\n'
+msginicial = 'Olá, esse é o TatuGram. Aqui você pode ficar sabendo sobre a sua grade (turmas, salas e horários), cardápio do RU, fretados (horários de partida), disciplinas da UFABC, etc. Basta digitar o que deseja.\n Alguns exemplos de uso:\n- Grade: Quero saber as minhas turmas, ra 12345678910\n- Cardápio RU: O que tem para o almoço/jantar?\n- Fretados: Qual o próximo fretado de SA para SBC?\n'
 
 
 
@@ -62,7 +62,7 @@ def msg_inicial(mensagem):
     bot.reply_to(mensagem, msginicial)
 
 @bot.message_handler(commands=["help"])
-def msg_inicial(mensagem):
+def msg_help(mensagem):
     bot.reply_to(mensagem, msginicial)
 
 @bot.message_handler(content_types=['text'])
@@ -89,8 +89,8 @@ def padrao(mensagem):
                     for disc in response:
                         keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
 
-                    msg = bot.reply_to(mensagem, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
-            else: msg = bot.reply_to(mensagem,response)
+                    msg = bot.reply_to(mensagem, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard,parse_mode= 'Markdown')
+            else: msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
 
             bot.register_next_step_handler(msg,padrao)
         else:
@@ -104,17 +104,20 @@ def ra(mensagem):
     try:
         print("step ra")
         response, intent = tatuia.tatu_zap.get_reply('matérias do ' + mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
-        msg = bot.reply_to(mensagem,response)
 
-        if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
-            if response == 'RA não encontrado, por favor digite seu RA' :
-                bot.register_next_step_handler(msg, ra)
-            else : bot.register_next_step_handler(msg,padrao)
-        else:
+        if intent == 'discinfo':
+            if response == 'Selecionar na lista':
+                search_nome_disc = tatuia.extract_nome_disciplina(mensagem.text)
+                if search_nome_disc:
+                    response = tatuia.get_disciplinas(mensagem.text)
+                    print('response: ', response)
+                    keyboard = telebot.types.InlineKeyboardMarkup() #utilizado para gerar o menu em mensagens do telegram
+                    for disc in response:
+                        keyboard.row(telebot.types.InlineKeyboardButton(disc['disciplina'], callback_data=disc['sigla']))#insere no menu cada disciplina presenta na lista, gerando um callback com a sigla da disciplina (para diferenciar)
+
+                    msg = bot.reply_to(mensagem, 'Selecione qual o nome da disciplina desejada', reply_markup=keyboard)
+            else: msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
             bot.register_next_step_handler(msg,padrao)
-
-        #bot.delete_state(mensagem.from_user.id, mensagem.chat.id)
-
     except Exception as e:
         bot.reply_to(mensagem, e)
 
@@ -127,7 +130,7 @@ def test_callback(call): # <- passes a CallbackQuery type object to your functio
         userMessage = call.data
         texto = tatuia.get_disciplina_codigo(userMessage)
 
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=texto)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=texto,parse_mode= 'Markdown')
 
 
 # Enable saving next step handlers to file "./.handlers-saves/step.save".
