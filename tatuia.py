@@ -211,11 +211,11 @@ def turmas(RA):
         nome = disciplina['DISCIPLINA - TURMA']
 
         if teoria == 0:
-            string += '*** {} ***\nHorário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
+            string += '***{} ***\nHorário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
         elif pratica == 0:
-            string += '*** {} ***\nHorário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria)) 
+            string += '***{} ***\nHorário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria))
         else:
-            string += '*** {} ***\nHorário Teoria: {}\nHorário Prática: {}\n\n'.format(nome,teoria,pratica)
+            string += '***{} ***\nHorário Teoria: {}\nHorário Prática: {}\n\n'.format(nome,teoria,pratica)
 
     return string
 
