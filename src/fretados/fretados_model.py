@@ -27,7 +27,7 @@ def next_bus(origem, destino, horario_solicitacao, horario_limite, dia_semana): 
     return _get_collection().find({
         "origem": origem,
         "destino": destino,
-        "dias" : "SEMANA" if dia_semana < 5 else "SEMANA",
+        "dias" : "SEMANA" if dia_semana < 5 else "SABADO",
         "hora_partida" : {"$gte" : horario_solicitacao, "$lt": horario_limite}
     })
 
