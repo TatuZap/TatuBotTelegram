@@ -222,6 +222,18 @@ def turmas(RA):
 
     return string
 
+def getRA_byID(ID):
+    ra = usuario_model.find_by_id(ID)
+    return ra if ra else -1
+
+def setRA_byID(message,ID):
+    ra = extract_ra(message)
+    if ra:
+        if usuario_model.find_by_id(ID):
+            usuario_model.find_and_update(ID,ra)
+        else: usuario_model.insert_id_ra(ID,ra)
+    return 'ra:{} id:{}'.format(ra,ID)
+
 def get_materias(message):
     ra = extract_ra(message)
     dia_semana = extract_dia_semana(message)

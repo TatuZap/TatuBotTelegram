@@ -34,6 +34,17 @@ def find_and_update(id, ra):
     except Exception as e:
         raise e
 
+def insert_id_ra(id, ra):
+    """
+        Função que retorna um usuário com base na no seu id único
+    """
+    try:
+        response = insert_item({ "ra" : ra, "id":id })
+        if response:
+            return response
+    except Exception as e:
+        raise e
+
 def insert_item(item):
     """
         Função que insere um usuário na Coleção de usuários

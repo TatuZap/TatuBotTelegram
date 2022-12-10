@@ -64,16 +64,27 @@ def msg_help(mensagem):
 def padrao(mensagem):
     try:
         print('step padrao')
-        print('Aqui está a mensagem: {} '.format(mensagem))
-
+        print('Aqui está a mensagem: {} \n\n'.format(mensagem))
         response, intent = tatuia.tatu_zap.get_reply(mensagem.text) #recebe intent prevista com mensagem de resposta padrão para a intent
-        print('response {},intent {}'.format(response,intent))
+        print('response {},intent {}\n'.format(response,intent))
         if intent == "myclasses": #intent myclasses, para conseguir as salas/professores/horarios por RA
-            msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
+            #msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
             if response == 'RA não encontrado, por favor digite seu RA' :
-                print('set state ra')
-                bot.register_next_step_handler(msg, ra)
-            else : bot.register_next_step_handler(msg,padrao)
+                if tatuia.getRA_byID(mensagem.from_user.id) != -1:
+                    print('RA na base')
+                    response, intent = tatuia.tatu_zap.get_reply(mensagem.text +'RA '+ tatuia.getRA_byID(mensagem.from_user.id)['ra'])
+                    tatuia.setRA_byID(mensagem.text,mensagem.from_user.id)
+                    msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
+                    bot.register_next_step_handler(msg,padrao)
+                else:
+                    msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
+                    print('set state ra')
+                    bot.register_next_step_handler(msg, ra)
+            else :
+                print('nadd {} no bd'.format(mensagem.from_user.id))
+                msg = bot.reply_to(mensagem,response,parse_mode= 'Markdown')
+                tatuia.setRA_byID(mensagem.text,mensagem.from_user.id)
+                bot.register_next_step_handler(msg,padrao)
         elif intent == 'discinfo':
             if response == 'Selecionar na lista':
                 search_nome_disc = tatuia.extract_nome_disciplina(mensagem.text)
