@@ -1,8 +1,8 @@
 import unittest
 import tatuia
 import json
-import src.connection.fretados_model as fretados_model
-import src.connection.restaurante_model as restaurante_model
+import src.fretados.fretados_model as fretados_model
+import src.restaurante.restaurante_model as restaurante_model
 
 
 

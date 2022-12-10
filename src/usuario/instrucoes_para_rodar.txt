@@ -1,0 +1,3 @@
+- Rodar o comando `python3`
+- Rodar o comando `import src.usuario.usuario_model as usuario_model`
+- Rodar o comando `list(usuario_model.list_all())` por exemplo

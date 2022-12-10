@@ -17,18 +17,18 @@ import os
 import unidecode
 import re
 
-import src.connection.database as database
-import src.connection.fretados_model as fretado_model
-import src.connection.catalogo_model as catalogo_model
-import src.connection.restaurante_model as restaurante_model
-import src.connection.usuario_model as usuario_model
+import src.database as database
+import src.fretados.fretados_model as fretados_model
+import src.catalogo.catalogo_model as catalogo_model
+import src.restaurante.restaurante_model as restaurante_model
+import src.usuario.usuario_model as usuario_model
 
 from datetime import datetime
 
 
 from unittest import result
 
-from src.load.DB import get_db,DBCollections
+from src.turmas.load.DB import get_db,DBCollections
 
 from difflib import SequenceMatcher
 
@@ -285,12 +285,12 @@ def get_fretado(message):
 
         for i in possibilides:
             user_localtime = extract_origem_destino(i)
-            response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
-            aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else "Não existem fretados dentro de uma hora para ir " + i
+            response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
+            aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else "Não existem fretados dentro de uma hora para ir " + i+'\n'
             saida += aux
         return saida.replace('_',' ')
 
-    response = list(fretado_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
+    response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
     return ("Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida'])).replace('_',' ') if response else None
 
 def extract_nome_disciplina(message):
@@ -362,10 +362,13 @@ def get_ru(message):
     tipo = 0
     dia = extract_dia_semana(message)
     cardapio = list(restaurante_model.find_by_weekday_num(datetime.now().weekday(),tipo)) if not dia        else list(restaurante_model.find_by_weekday_num(dia,tipo))
-    if cardapio == []: return 'O Restaurante Universitário não funciona nesse dia.'
+    print('cardapio:',cardapio)
+    if len(cardapio) == 0 : return 'O Restaurante Universitário não funciona nesse dia.'
     saida = cardapio[0] if cardapio != [] else None
+    print('saida jantar:',saida['jantar'])
     if saida:
         if saida['almoço'] == saida['saladas']:
+            print('vazio')
             return saida['sobremesas'].split('ru são bernardo fechado.')[0]+'\nru são bernardo fechado.'+saida['sobremesas'].split('ru são bernardo fechado.')[1]
         jantar = re.findall(r"jantar|janta|noite", message)
         almoço = re.findall(r"almoço|manha", message)
@@ -379,7 +382,10 @@ def get_ru(message):
     return resposta
 
 def split_pratoprincipal_opcao(message):
-    return '\nPrato Principal'+message.split('opção sem carne')[0].split(' prato principal')[1]+'\nOpção sem CARNE'+(message.split('opção sem carne')[1]).split('guarnição')[0] + '\nGuarnição'+(message.split('opção sem carne')[1]).split('guarnição')[1]
+    print(len(message))
+    if len(message)<10 : return '\nNão possui essa refeição.'
+    else:
+        return '\nPrato Principal'+message.split('opção sem carne')[0].split(' prato principal')[1]+'\nOpção sem CARNE'+(message.split('opção sem carne')[1]).split('guarnição')[0] + '\nGuarnição'+(message.split('opção sem carne')[1]).split('guarnição')[1]
 
 
 database = {
@@ -431,7 +437,7 @@ database = {
 
 print("filling database")
 database = gerador.fill_database(database,50)
-fretado_model.populate_database()
+fretados_model.populate_database()
 catalogo_model.populate_database()
 restaurante_model.populate_database()
 # demo da funcionalide da classe utils para mensagem

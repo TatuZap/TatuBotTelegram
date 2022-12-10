@@ -5,11 +5,6 @@ import json
 import unidecode
 import tatuia
 import sys
-import src.connection.database as database
-import src.connection.fretados_model as fretado_model
-import src.connection.catalogo_model as catalogo_model
-import src.connection.restaurante_model as restaurante_model
-import src.connection.usuario_model as usuario_model
 
 from dotenv import load_dotenv
 from nltk.corpus import stopwords

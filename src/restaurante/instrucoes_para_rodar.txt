@@ -1,0 +1,4 @@
+- Rodar o comando `python3`
+- Rodar o comando `import src.restaurante.restaurante_model as restaurante_model`
+- Rodar o comando `restaurante_model.populate_database()` para raspar os dados e popular o banco
+- Rodar o comando `list(restaurante_model.list_all())` por exemplo

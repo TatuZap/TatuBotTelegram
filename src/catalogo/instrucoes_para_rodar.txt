@@ -1,0 +1,4 @@
+- Rodar o comando `python3`
+- Rodar o comando `import src.catalogo.catalogo_model as catalogo_model`
+- Rodar o comando `catalogo_model.populate_database()` para raspar os dados e popular o banco
+- Rodar o comando `list(catalogo_model.list_all())` por exemplo
