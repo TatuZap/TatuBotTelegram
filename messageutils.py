@@ -10,7 +10,7 @@ import numpy as np
 import warnings
 import re
 import string
-import unidecode 
+import unidecode
 from dataclasses import dataclass
 from typing import Callable
 
@@ -32,7 +32,7 @@ from datetime import datetime,timedelta
 # deixe a linha abaixo sem comentários somente se precisar dessas bibliotecas de nlp
 
 @dataclass
-class MessageUtils:    
+class MessageUtils:
     """
         Classe que concentra todo o processamento necessário para
         textos de forma numérica.
@@ -41,35 +41,35 @@ class MessageUtils:
     punctuacion_pattern = r'[^\w\s]'
     multiple_backspace_pattern = r'\s+'
     emote_pattern = re.compile("["
-            u"\U0001F600-\U0001F64F"  
-            u"\U0001F300-\U0001F5FF"  
-            u"\U0001F680-\U0001F6FF"  
-            u"\U0001F1E0-\U0001F1FF"  
-            u"\U00002500-\U00002BEF"  
+            u"\U0001F600-\U0001F64F"
+            u"\U0001F300-\U0001F5FF"
+            u"\U0001F680-\U0001F6FF"
+            u"\U0001F1E0-\U0001F1FF"
+            u"\U00002500-\U00002BEF"
             u"\U00002702-\U000027B0"
             u"\U00002702-\U000027B0"
             u"\U000024C2-\U0001F251"
             u"\U0001f926-\U0001f937"
             u"\U00010000-\U0010ffff"
-            u"\u2640-\u2642" 
+            u"\u2640-\u2642"
             u"\u2600-\u2B55"
             u"\u200d"
             u"\u23cf"
             u"\u23e9"
             u"\u231a"
-            u"\ufe0f"  
+            u"\ufe0f"
             u"\u3030"
             "]+",re.UNICODE)
-    
+
     normalizer =  Normaliser(tokenizer='readable')
 
     clean_by_sub  = lambda self, message, pattern, sub_string : re.sub(pattern,sub_string,message)
-    
+
     clean_emotes = lambda self, message, : self.clean_by_sub(message, self.emote_pattern, '')
     clean_urls   = lambda self, message, : self.clean_by_sub(message, self.url_pattern, '')
     clean_punctuation = lambda self, message :  self.clean_by_sub(message, self.punctuacion_pattern, '')
     clean_multiple_backspaces = lambda self, message : self.clean_by_sub(message, self.multiple_backspace_pattern, ' ')
-    
+
     normalize_text = lambda self, message : self.normalizer.normalise(message)
 
     def full_clean_text(self,message): 
@@ -111,7 +111,7 @@ class MessageUtils:
         self.X = np.array(list(bag_X_and_Y[:, 0]))
         self.Y = np.array(list(bag_X_and_Y[:, 1]))
 
-    
+
 
     def process_training_data(self, corpus, stopwords=nltk.corpus.stopwords.words('portuguese')):
         self.corpus = corpus
@@ -147,7 +147,7 @@ class MessageUtils:
 
     def show_data(self):
         return pd.DataFrame(self.documents, columns = ['Message_tokens', 'Intent'])
-    
+
     def preprocess_lstm(self):
         df = pd.DataFrame(self.message_utils.documents,columns = ["token-frase","classe"])
         df["texto-lstm"] = df["token-frase"].apply( lambda message : " ".join(message))
@@ -158,35 +158,33 @@ class MessageUtils:
         X = tokenizer.texts_to_sequences(df['texto-lstm'].values)
         self.X = pad_sequences(X, maxlen=MAX_LEN)
         self.Y = pd.get_dummies(df['classe']).values
-        
+
 
 
     def __valid_path__(self):
         return os.path.exists(self.dfa_file)
-    
+
     def load_data(self):
         if self.__valid_path__(self):
             return json.load(self.dfa_file)
-   
+
     def is_ra(self,message):
         possible_ra = re.findall('\d+', message)
         lenght_constraint = lambda x : len(x) == 8 or len(x) == 11
         valid_ra = list(filter(lenght_constraint,possible_ra))
         return None if valid_ra == [] else valid_ra[0]
 
-        
+
     '''
         check_origin: dada uma mensagem, determina qual a origem (sa ou sbc) e qual a origem (sa ou sbc)
     '''
 
     def check_origin(self, message):
-        lista = [] # Origen, Destino, Hora,Minuto
-        origemSA = ['de santo andre','de sa','de sta']
-        origemSBC = ['de sao bernardo','de sbc','de sao bernardo']
-        destinoSA = ['para santo andre','para sa','para sta','pra santo andre','pra sa','pra sta']
-        destinoSBC = ['para sao bernardo','para sbc','pra sao bernardo','pra sbc']
-        origem = 'SA' if any(element in unidecode.unidecode(message.lower()) for element in origemSA) else 'SBC' if any(element in unidecode.unidecode(message.lower()) for element in origemSBC) else None
-        destino = 'SBC' if any(element in unidecode.unidecode(message.lower()) for element in destinoSBC) else 'SA' if any(element in unidecode.unidecode(message.lower()) for element in destinoSA) else None
+        lista = [] # Origem, Destino, Horario atual ,Horario atual + 1 hora (limite), Dia da semana (0-6)
+
+        origem = 'SA' if re.findall(r'(de.)(sa\b|sta|santo andre)', message) else 'SA' if re.findall('(sa|sta|santo andre).(para|pra)', message) else 'TERMINAL-SBC' if re.findall(r'(terminal|estacao).(sbc|sao bernardo).(para|pra)',message) else 'SBC' if re.findall(r'de.(sbc|sao bernardo).', message) else 'SBC' if re.findall(r'(sbc|sao bernardo).(para|pra).', message) else None
+
+        destino = 'SA' if re.findall(r'(para|pra).(sa\b|sta|santo andre)', message) else 'TERMINAL-SBC' if re.findall(r'(para|pra).(terminal|estacao).(sbc|sao bernardo)',message) else 'SBC' if re.findall(r'(para|pra).(sbc|sao bernardo)', message) else 'SBC' if re.findall(r'(para|pra|pro).(terminal|terminal leste|terminal celso daniel|estação)', message) else None
 
         if origem and destino :
             now = datetime.now()
@@ -200,7 +198,6 @@ class MessageUtils:
             lista.append(datetime.now().weekday())
 
         return None if lista == [] else lista
-        
 
 def main():
     database = {

@@ -1,4 +1,4 @@
-from src.tatuia import TatuIA 
+from tatuia import TatuIA
 from messageutils import MessageUtils # nossa classe de pré-processamento
 from sklearn.metrics import classification_report
 
@@ -10,74 +10,55 @@ import geradorfrases as gerador
 
 
 def main():
-    # database = {
-    #     "intents": [
-    #             {
-    #                 "tag": "welcome",
-    #                 "patterns": ['oi','ola','boa tarde','bom dia','boa noite','saudações','fala','eae','salve'],
-    #                 "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Salve, qual foi ?", "Manda pro pai, Lança a braba", "No que posso te ajudar ?"],
-    #                 "context": [""]
-    #             },
-    #             {
-    #                 "tag": "my_classes",
-    #                 "patterns": ['materias', 'materia', 'sala', 'disciplina','professor','local','turma','turmas','professores','disciplinas','salas','aula','aulas','grade','horario','classe','classes','cadeira','cadeiras','sala de aula','local de estudo','disciplinas matriculadas'],
-    #                 "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
-    #                 "context": [""]
-    #             },
-    #             {
-    #                 "tag": "bus_info",
-    #                 "patterns": ['fretado','fretados','onibus','busao','lotação','coletivo','circular','transporte','carro','veículo'],
-    #                 "responses": ["Fretados","Horarios Fretado"], #provisório
-    #                 "context": [""]
-    #             },
-    #             {
-    #                 "tag": "anything_else",
-    #                 "patterns": [],
-    #                 "responses": ["Desculpa, não entendi o que você falou, tente novamente!","Não compreendi a sua solicitação, talvez eu possa te ajudar"],
-    #                 "context": [""]
-    #             }
-    #         ]
-    #     }
-
     database = {
     "intents": [
-            {
-                "tag": "welcome",
-                "patterns": [],
-                "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Salve, qual foi ?", "Manda pro pai, Lança a braba", "No que posso te ajudar ?"],
-                "context": [""]
-            },
-            {
-                "tag": "myclasses",
-                "patterns": [],
-                "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
-                "context": [""]
-            },
-            {
-                "tag": "businfo",
-                "patterns": [],
-                "responses": ["Esses são os horários dos fretados","Horarios dos fretados: ", "Ah, você quer saber o horário dos fretados"],
-                "context": [""]
-            },
-            {
-                "tag": "discinfo",
-                "patterns": [],
-                "responses": ['Informações da disciplina X','Para a disciplina Y, as informações são as seguintes: '],
-                "context": [""]
-            },
         {
-                "tag": "ru",
-                "patterns": [],
-                "responses": ['O cárdapio de hoje é esse:','Para o almoço temos:', 'Para o jantar teremos:'], # provisório
-                "context": [""]
-            },
-            {
-                "tag": "anything_else",
-                "patterns": [],
-                "responses": ["Desculpa, não entendi o que você falou, tente novamente!","Não compreendi a sua solicitação, talvez eu possa te ajudar", "Por favor, digite novamente"],
-                "context": [""]
-            }
-        ]
+            "tag": "welcome",
+            "patterns": [],
+            "responses": ["Olá, serei seu assistente virtual, em que posso te ajudar?","Olá, o que você gostaria de saber?","Olá, sobre o que você gostaria de saber?","Oi, diga para mim o que você quer saber", "Oi, diga no que posso te ajudar",
+           "Olá, diz pra mim, o que você gostaria de saber?", "Sou seu assistente virtual, o que você gostaria de saber?", "Serei seu assistente virtual, diga pra mim o que deseja",
+           "O que você gostaria de saber?","No que posso te ajudar?"],
+            "context": [""]
+        },
+        {
+            "tag": "myclasses",
+            "patterns": [],
+            "responses": [],
+            "context": [""]
+        },
+        {
+            "tag": "businfo",
+            "patterns": [],
+            "responses": [],
+            "context": [""]
+        },
+        {
+            "tag": "discinfo",
+            "patterns": [],
+            "responses": [],
+            "context": [""]
+        },
+        {
+            "tag": "ru",
+            "patterns": [],
+            "responses": [],
+            "context": [""]
+        },
+        {
+            "tag": "contadorferias",
+            "patterns": [],
+            "responses": ['final quadri'],
+            "context": [""]
+        },
+        {
+            "tag": "anything_else",
+            "patterns": [],
+            "responses": ["Desculpe, não entendi o que você falou, tente novamente!","Me desculpe, digite novamente o que deseja","Desculpe! Não entendi o que você quis dizer","Sinto muito, não entendi a sua solicitação, tente novamente",
+                "Não compreendi a sua solicitação, talvez eu possa te ajudar","Não entendi a sua solicitação, digite novamente","Não consegui entender o que você digitou, tente novamente",
+                "Por favor, digite novamente o que deseja","Por favor, digite novamente!","Peço, por gentileza, que digite novamente"],
+            "context": [""]
+        }
+    ]
     }
     n = 100
     database = gerador.fill_database(database,3*n)
@@ -89,19 +70,18 @@ def main():
     tatu_zap = TatuIA("", message_utils=message_utils,lstm = False)
     tatu_zap.print_model()
     #tatu_zap.eval_model()
-  
-    
+
     db_test = gerador.fill_treino(database,n)
-    X = []    
+    X = []
     for a in db_test['intents']:
         if a['tag'] != 'anything_else': X += a['patterns'][0:n]
     X = X + gerador.gerar_anything(n)
-    
-    Y = ['welcome']*n+['myclasses']*n+['businfo']*n+['discinfo']*n+['ru']*n+['anything_else']*n
 
-    
+    Y = ['welcome']*n+['myclasses']*n+['businfo']*n+['discinfo']*n+['ru']*n+['contadorferias']*n+['anything_else']*n
+
+
     list_predict = [(tatu_zap.get_predict(i)) for i in X]
-        
+
 
     y_true = pd.Series(Y, name='Row_True')
     y_pred = pd.Series(list_predict, name='Col_Pred')

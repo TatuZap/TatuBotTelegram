@@ -1,0 +1,4 @@
+- Rodar o comando `python3`
+- Rodar o comando `import src.fretados.fretados_model as fretados_model`
+- Rodar o comando `fretados_model.populate_database()` para raspar os dados e popular o banco
+- Rodar o comando `list(fretados_model.list_all())` por exemplo

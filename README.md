@@ -6,47 +6,120 @@ O MVP do TatuZap consiste de dois repositórios, o ETLTatuZap, reponsável por c
 
 <hr />
 
-## TatuBotTelegram
+## ETLTatuZap
 
+Os códigos presentes nesse repositório são relativos ao processo de Extração, Transformação e Carregamento (LOAD), também conhecido como _ETL_, toda essa etapa tem como objetivo alimentar o banco de dados a ser utilizado em nosso chatbot (https://github.com/TatuZap/BotTatuZap) para responder queries de usuários.
 
-Os códigos presentes neste repositório estão relacionados a geração da I.A utilizada no TatuZap, capaz de realizar uma conversa que atenda as requisições do usuário, utilizando informações fornecidas pelo mesmo em conjunto com nosso back-end (https://github.com/TatuZap/ETLTatuZap).
+Dentro do ETLTatuZap, pretendemos utilizar as seguintes tecnologias:
 
-Dentro do BotTatuZap, pretendemos utilizar as seguintes tecnologias:
+- Python(3.9)
 
-* Python(3.8)
-* NLTK
-* TensorFlow
-* Spacy
-* Sklearn
-* Pandas
-* [Enelvo](https://github.com/thalesbertaglia/enelvo) 
-* Unittest
+- Pandas
 
-# instruções 
-## Pré-requisitos:
-Como pré-requisitos, se faz necessário uma instalação do Python na versão 3.8. Para mais informações acerca de como
-instalar o Python visite https://www.python.org/downloads/.
+- MongoDB
 
-Com uma instalação do Python3.8 e um cliente git, clone nosso repositorio. Isso pode ser feito com o seguinte comando:
+- FastAPI
+
+<hr />
+
+## Instruções de instalação
+
+Passo a passo para rodar o projeto.
+
+### Clonando o repositório:
+
+- Clone o repositório do Tatuzap ETL
+
 ```sh
-git clone https://github.com/TatuZap/TatuBotTelegram
+git clone git@github.com:TatuZap/ETLTatuZap.git
 ```
 
-O passo seguinte é a execução do makefile que automatiza o download das dependencias (módulos) que utilizamos em nosso projeto. 
-No terminal digite:
-```sh
-cd TatuBotTelegram && make all
-```
-Para concluir o setup, execute o script ***nltksetup.py*** que efetua download de algumas dependecia internas para o
-funcionamento completo da biblioteca NLTK (Natural Language ToolKit). Esse script deve ser acionado apenas uma vez.
-```sh
-python3.8 nltksetup.py
-```
-## Como usar
-O arquivo principal que possui toda a integração da I.A do TatuBot com o Telegram é o ***tatutelegram.py***. Para executá-lo, digite:
-```sh
-python3.8 tatutelegram.py
-```
+### Instalando python:
 
-## Exemplo de uso
-![caso de uso simplificado](tatuzap-use-case.png)
+- Windows: download do [Instalador](https://www.python.org/downloads/)
+
+- Linux: sudo apt-get install python3
+
+### Instalando PIP
+
+- Windows: curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  python get-pip.py
+- Linux: sudo apt install python3-pip
+  Conferindo a instalação: pip3 --version
+
+### Instalando virtualenv
+
+- pip install virtualenv
+
+#### Criando Ambiente Virtual
+
+- python3 -m venv venv
+
+#### Ativando ambiente virtual
+
+- Windows: No CMD venv\Scripts\Activate
+
+- Linux: source venv/bin/activate
+
+### Instalando Dependencias
+
+- pip install -r requirements.txt
+
+<hr />
+
+## Instruções de execução
+
+### Funcionalidade de catalogo
+
+- Rodar o comando `python3`
+- Rodar o comando `import src.catalogo.catalogo_model as catalogo_model`
+- Rodar o comando `catalogo_model.populate_database()` para raspar os dados e popular o banco
+- Rodar o comando `list(catalogo_model.list_all())` por exemplo
+
+### Funcionalidade de fretados
+
+- Rodar o comando `python3`
+- Rodar o comando `import src.fretados.fretados_model as fretados_model`
+- Rodar o comando `fretados_model.populate_database()` para raspar os dados e popular o banco
+- Rodar o comando `list(fretados_model.list_all())` por exemplo
+
+### Funcionalidade de restaurante
+
+- Rodar o comando `python3`
+- Rodar o comando `import src.restaurante.restaurante_model as restaurante_model`
+- Rodar o comando `restaurante_model.populate_database()` para raspar os dados e popular o banco
+- Rodar o comando `list(restaurante_model.list_all())` por exemplo
+
+### Funcionalidade de turmas
+
+- Essa funcionalidade esta em refatoração, ainda não há instrucoes claras para rodar
+
+### Funcionalidade de usuario
+
+- Rodar o comando `python3`
+- Rodar o comando `import src.usuario.usuario_model as usuario_model`
+- Rodar o comando `list(usuario_model.list_all())` por exemplo
+
+<hr />
+
+## Instruções de testes automatizados
+
+### Funcionalidade de catalogo
+
+- Rodar o comando `python3 -m src.catalogo.catalogo_model_test`
+
+### Funcionalidade de fretados
+
+- Rodar o comando `python3 -m src.fretados.fretados_model_test`
+
+### Funcionalidade de restaurante
+
+- Rodar o comando `python3 -m src.restaurante.restaurante_model_test`
+
+### Funcionalidade de turmas
+
+- Ainda não há testes para essa funcionalidade
+
+### Funcionalidade de usuario
+
+- Rodar o comando `python3 -m src.restaurante.restaurante_model_test`
