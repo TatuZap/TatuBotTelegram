@@ -22,6 +22,7 @@ import src.fretados.fretados_model as fretados_model
 import src.catalogo.catalogo_model as catalogo_model
 import src.restaurante.restaurante_model as restaurante_model
 import src.usuario.usuario_model as usuario_model
+import src.calendario.calendario_model as calendario_model
 
 from datetime import datetime
 
@@ -177,6 +178,8 @@ class TatuIA:
             result = disc if disc else 'Não encontrei a disciplina selecionada'
         elif most_prob_intent == 'ru':
             result = get_ru(unidecode.unidecode(user_message).lower())
+        elif most_prob_intent == 'contadorferias':
+            result = calendario_model.contador_calendario()
         print('result: ',result)
         return result, most_prob_intent
 
@@ -280,13 +283,13 @@ def get_fretado(message):
     """
     user_localtime = extract_origem_destino(message)
     if not user_localtime :
-        possibilides = ["DE SA PARA SBC:", "DE SBC PARA SA:", "DE SBC PARA SBC"]
+        possibilides = ["DE SA PARA SBC:", "DE SBC PARA SA:", "DE SBC PARA SBC:", "DE TERMINAL SBC PARA SBC:","DE SBC PARA TERMINAL SBC:"]
         saida = ""
 
         for i in possibilides:
             user_localtime = extract_origem_destino(i)
             response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
-            aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else "Não existem fretados dentro de uma hora para ir " + i+'\n'
+            aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else i+'\n'+"Não existem fretados dentro de uma hora para ir "
             saida += aux
         return saida.replace('_',' ')
 
@@ -377,7 +380,7 @@ def get_ru(message):
         elif almoço:
             resposta = "***Almoço*** {}\n\n***Salada***\n{}\n\n***Sobremesa***\n{}".format(split_pratoprincipal_opcao(saida['almoço']),saida['saladas'][1:],saida['sobremesas'][1:])
         else:
-            resposta = "***Almoço***{}\n\n***Jantar***{}\n\n***Salada***\n{}\n\n***Sobremesa***\n{}".format(split_pratoprincipal_opcao(saida['almoço']),split_pratoprincipal_opcao(saida['jantar']),saida['saladas'][2:],saida['sobremesas'][2:])
+            resposta = "***Almoço***{}\n\n***Jantar***{}\n\n***Salada***\n{}\n\n***Sobremesa***\n{}".format(split_pratoprincipal_opcao(saida['almoço']),split_pratoprincipal_opcao(saida['jantar']),remove_spaces(saida['saladas']),remove_spaces(saida['sobremesas']))
     else: resposta = 'Falha na recuperação do cardápio'
     return resposta
 
@@ -387,6 +390,9 @@ def split_pratoprincipal_opcao(message):
     else:
         return '\nPrato Principal'+message.split('opção sem carne')[0].split(' prato principal')[1]+'\nOpção sem CARNE'+(message.split('opção sem carne')[1]).split('guarnição')[0] + '\nGuarnição'+(message.split('opção sem carne')[1]).split('guarnição')[1]
 
+def remove_spaces(message):
+    if len(message)<5 : return '\nNão possui essa opção.'
+    return message[2:]
 
 database = {
     "intents": [
@@ -401,25 +407,31 @@ database = {
         {
             "tag": "myclasses",
             "patterns": [],
-            "responses": ["Entendi, você deseja saber suas salas","Você deseja saber suas salas ?", "Ah, você quer saber qual sala ? ", "Suas Aulas ?"],
+            "responses": ['disciplinas'],
             "context": [""]
         },
         {
             "tag": "businfo",
             "patterns": [],
-            "responses": ["Esses são os horários dos fretados","Horarios dos fretados: ", "Ah, você quer saber o horário dos fretados"],
+            "responses": ['fretado'],
             "context": [""]
         },
         {
             "tag": "discinfo",
             "patterns": [],
-            "responses": ['Informações da disciplina X','Para a disciplina Y, as informações são as seguintes: '],
+            "responses": ['ementa'],
             "context": [""]
         },
         {
             "tag": "ru",
             "patterns": [],
-            "responses": ['O cárdapio de hoje é esse:','Para o almoço temos:', 'Para o jantar teremos:'],
+            "responses": ['ru'],
+            "context": [""]
+        },
+        {
+            "tag": "contadorferias",
+            "patterns": [],
+            "responses": ['final'],
             "context": [""]
         },
         {
@@ -436,7 +448,7 @@ database = {
 
 
 print("filling database")
-database = gerador.fill_database(database,50)
+database = gerador.fill_database(database,100)
 fretados_model.populate_database()
 catalogo_model.populate_database()
 restaurante_model.populate_database()

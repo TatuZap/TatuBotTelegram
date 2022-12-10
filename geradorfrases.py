@@ -7,13 +7,6 @@ def fill_database(database, n):
     for intent in database['intents']:
 
         if intent["tag"] == 'myclasses':
-            # # sinonimo de QUERO
-            # list1 = ['quero', 'desejo', 'pretendo', 'cogito', 'exijo', 'necessito', 'preciso', 'procuro', 'interesso-me','','informe','diga','qual é']+['']*10
-            # # sinonimos de SABER
-            # list2 = ['saber', 'entender', 'que me informe', 'conhecer', 'compreender']+['']*10
-            # # variacoes para MINHAS TURMAS
-            # list3 = ['minhas salas', 'minhas turmas', 'minha grade', 'minhas salas de aula', 'minhas classes', 'minha próxima aula', 'a próxima aula',
-            #         'a turma seguinte', 'a seguinte sala', 'as salas', 'a sala','os professores','meus horários','minhas matérias','minha matérias','próximo professor','que sala devo ir']
             list1  = ['minhas', 'quero minhas', 'quais as minhas', 'qual minha', 'diga a ','informe a','quero saber as', 'me fale as','qual é', 'diz a']+['']*10
             list2   = ['materias', 'materia', 'sala','salas','professor','professora','professoras','docente','docentes','local','turma','turmas','professores','disciplinas','aula','aulas','grade','horario','horarios','classe','classes']
             list3 = ['agora','que devo ir','na segunda','na terca','na quarta','na quinta','na sexta','de manha','de tarde','de noite']+['']*7
@@ -76,6 +69,16 @@ def fill_database(database, n):
                     intent['patterns'].append (a)
                 else: i = i-1
 
+        if intent["tag"] == 'contadorferias':
+            list_cont1 = ['quanto','qual','quando é']
+            list_cont2 = ['falta para', 'o fim','que acaba','que vai finalizar','falta pro fim','que termina o']
+            list_cont3 = ['do quadrimestre','do quadri','das aulas','do periodo letivo','o quadrimestre','o quadri','as aulas','o periodo letivo']
+            for i in range(n):
+                a = random.choice(list_cont1)+' '+random.choice(list_cont2)+' '+random.choice(list_cont3)
+                if a != "  ":
+                    intent['patterns'].append (a)
+                else: i = i-1
+
     return database
 
 def fill_treino(database, n):
@@ -102,14 +105,14 @@ def fill_treino(database, n):
                     intent['patterns'].append (a)
 
         if intent["tag"] == 'discinfo':
-            list_disc1 = ['quero saber','informe','qual','que']+['']*3
+            list_disc1 = ['quero saber a','informe a','qual a','que']+['']*5
             list_disc2 = ['ementa','plano de ensino','requisitos', 'bibliografia']
 
             for i in range(n):
                 a = random.choice(list_disc1)+' '+random.choice(list_disc2)
                 if(a != " "):
                     intent['patterns'].append (a)
-                
+
         if intent["tag"] == 'ru':
             list_disc1 = ['quero saber','informe', 'me diga', 'me fale']+['']*4
             list_disc2 = ['o que será no almoço','o que será no jantar','o que tem de comida', 'qual a refeição', 'o cardápio', 'o que temos no ru','ru','restaurante universiário','refeitório']
@@ -128,7 +131,16 @@ def fill_treino(database, n):
                 a = random.choice(list_wel1)+' '+random.choice(list_wel2)+' '+random.choice(list_wel3)
                 if(a != " "):
                     intent['patterns'].append (a)
-                
+        if intent["tag"] == 'contadorferias':
+            list_cont1 = ['quanto','qual','quando é']
+            list_cont2 = ['falta para', 'o fim','falta para o fim']
+            list_cont3 = ['do quadrimestre','do quadri','das aulas','do periodo letivo']
+            for i in range(n):
+                a = random.choice(list_cont1)+' '+random.choice(list_cont2)+' '+random.choice(list_cont3)
+                if a != "  ":
+                    intent['patterns'].append (a)
+                else: i = i-1
+
     return database
 
 def gerar_anything(n):
@@ -184,6 +196,12 @@ database = {
                 "tag": "ru",
                 "patterns": [],
                 "responses": ['O cárdapio de hoje é esse:','Para o almoço temos:', 'Para o jantar teremos:'], # provisório
+                "context": [""]
+            },
+            {
+                "tag": "contadorferias",
+                "patterns": [],
+                "responses": [],
                 "context": [""]
             },
             {
