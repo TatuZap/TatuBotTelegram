@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.getcwd(), '.env')) # carrega as variáveis do arquivo .env local ]
 @dataclass
 class DBCollections:
-    TURMAS = "turmas"
+    RA_TURMAS = "ra_turmas"
+    TURMAS_SALAS_HORARIOS = "turmas_salas_horarios"
     FRETADOS = "fretados"
     CATALOGO = "catalogo"
     USUARIO =  "usuario"

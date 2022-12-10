@@ -23,13 +23,13 @@ import src.catalogo.catalogo_model as catalogo_model
 import src.restaurante.restaurante_model as restaurante_model
 import src.usuario.usuario_model as usuario_model
 import src.calendario.calendario_model as calendario_model
+import src.turmas.turmas_model as turmas_model
 
 from datetime import datetime
 
 
 from unittest import result
 
-from src.turmas.load.DB import get_db,DBCollections
 
 from difflib import SequenceMatcher
 
@@ -169,7 +169,7 @@ class TatuIA:
                 break
 
         if most_prob_intent == 'myclasses':
-            result = turmas(extract_ra(user_message))
+            result = get_turmas(user_message)
         elif most_prob_intent == 'businfo':
             fretado = get_fretado(user_message)
             result = fretado if fretado else 'Não encontrei um fretado adequado'
@@ -195,27 +195,25 @@ class TatuIA:
 
 #tatu_zap.eval_model()
 
-turmas_por_ra_collection = get_db[DBCollections.TURMAS_POR_RA]
 
-def turmas(RA):
+
+def get_turmas(mensagem):
     """
     Retorna as turmas (no formato de string a ser exibido) para determinado RA, caso o encontre
     """
-    QUERY = {"RA": str(RA)}
     string = ""
-    result = list(turmas_por_ra_collection.find(QUERY))
-    if result == []: return 'RA não encontrado, por favor digite seu RA'
-    lista = result[0]["TURMAS"]
-    for res in lista:del res['_id']
-    lista_clean = [dict(item) for item in {tuple(dict.items()) for dict in lista}]
-    for disciplina in lista_clean:
-        teoria = disciplina['HORÁRIO TEORIA']
-        pratica = disciplina['HORÁRIO PRÁTICA']
-        nome = disciplina['DISCIPLINA - TURMA']
+    result = get_materias(mensagem)
+    if not result : return 'RA não encontrado, por favor digite seu RA'
+    lista_clean = result
 
-        if teoria == 0:
+    for disciplina in lista_clean:
+        teoria = disciplina['horário_teoria']
+        pratica = disciplina['horário_pratica']
+        nome = disciplina['Disciplina']
+
+        if teoria == ' ':
             string += '***{} ***\nHorário Prática: {}\n\n'.format(nome,pratica) #print('Disciplina: {}, Horário Prática: {}'.format(nome,pratica)) tempo
-        elif pratica == 0:
+        elif pratica == ' ':
             string += '***{} ***\nHorário Teoria: {}\n\n'.format(nome,teoria) #print('Disciplina: {}, Horário Teoria: {}'.format(nome,teoria))
         else:
             string += '***{} ***\nHorário Teoria: {}\nHorário Prática: {}\n\n'.format(nome,teoria,pratica)
@@ -239,26 +237,25 @@ def get_materias(message):
     dia_semana = extract_dia_semana(message)
     tempo = extract_tempo(message)
     if ra:
-        # materias_model.next_aula(horario,dia) #horario do dateTime
-        # materias_model.now_aula(horario,dia)
+        # turmas_model.next_aula(horario,dia) #horario do dateTime
+        # turmas_model.now_aula(horario,dia)
         if dia_semana:
-            return materias_model.get_materias(ra,dia_semana)
-        if tempo:
-            if tempo == 'agora':
-                return materias_model.now_aula(ra,tempo)
-            if tempo == 'proxima':
-                return materias_model.next_aula(ra,tempo)
-            if tempo == 'hoje':
-                hoje = datetime.now().weekday()
-                return materias_model.get_materias(ra,hoje)
-            if tempo == 'amanha':
-                amh = datetime.now().weekday()+1
-                return materias_model.get_materias(ra,amh)
+            return turmas_model.find_turmas_by_ra(ra,dia_semana)
+        # if tempo:
+        #     if tempo == 'agora':
+        #         return turmas_model.now_aula(ra,tempo)
+        #     if tempo == 'proxima':
+        #         return turmas_model.next_aula(ra,tempo)
+        #     if tempo == 'hoje':
+        #         hoje = datetime.now().weekday()
+        #         return turmas_model.get_materias(ra,hoje)
+        #     if tempo == 'amanha':
+        #         amh = datetime.now().weekday()+1
+        #         return turmas_model.get_materias(ra,amh)
 
         else:
-            #return materias_model.get_materias(ra)
-            return ''
-    else: return 'Por favor, digite seu RA'
+            return turmas_model.find_turmas_by_ra(ra)
+    else: return None
 
 def extract_ra(message):
     """
@@ -267,7 +264,7 @@ def extract_ra(message):
     return message_utils.is_ra(message)
 
 def extract_dia_semana(message):
-    a = re.findall('segunda|terca|quarta|quinta|sexta|sabado', message)
+    a = re.findall('segunda|terça|quarta|quinta|sexta|sabado', message)
     return convert_dia(a[0]) if a != [] else None
 
 def extract_tempo(message):
@@ -277,7 +274,7 @@ def extract_tempo(message):
 
 
 def convert_dia(message):
-    lista = list(enumerate(["segunda","terca","quarta","quinta","sexta","sabado"]))
+    lista = list(enumerate(["segunda","terça","quarta","quinta","sexta","sabado"]))
     for i in lista:
         if i[1] == message:
             return i[0]
@@ -295,7 +292,7 @@ def get_fretado(message):
     """
     user_localtime = extract_origem_destino(message)
     if not user_localtime :
-        possibilides = ["DE SA PARA SBC:", "DE SBC PARA SA:", "DE SBC PARA SBC:", "DE TERMINAL SBC PARA SBC:","DE SBC PARA TERMINAL SBC:"]
+        possibilides = ["DE SA PARA SBC:", "DE SBC PARA SA:", "DE SBC PARA SBC:", "DE TERMINAL SBC PARA SBC:","DE SBC PARA TERMINAL SBC:",'DE SA PRO TERMINAL']
         saida = ""
 
         for i in possibilides:

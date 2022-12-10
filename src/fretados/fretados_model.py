@@ -19,7 +19,7 @@ def next_bus(origem, destino, horario_solicitacao, horario_limite, dia_semana): 
         origem: Onde o usuário se encontra.
         destino: Onde o usuário deseja ir.
         horario_solicitacao: Quando exatamente ele fez essa requisição ?.
-        horario_limite: Qual a carência permitida ?20 minutos é o padrão.
+        horario_limite: Qual a carência permitida ?60 minutos é o padrão.
     Returns:
         Cursor (tipo iterável) do pymongo com a resposta, que pode ser vazia.
     """
@@ -27,7 +27,7 @@ def next_bus(origem, destino, horario_solicitacao, horario_limite, dia_semana): 
     return _get_collection().find({
         "origem": origem,
         "destino": destino,
-        "dias" : "SEMANA" if dia_semana < 5 else "SABADO",
+        "dias" : "SEMANA" if dia_semana < 5 else "SEMANA",
         "hora_partida" : {"$gte" : horario_solicitacao, "$lt": horario_limite}
     })
 
