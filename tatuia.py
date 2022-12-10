@@ -289,7 +289,7 @@ def get_fretado(message):
         for i in possibilides:
             user_localtime = extract_origem_destino(i)
             response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
-            aux = i + "\nLinha: {}, Horário_partida: {}\n".format(response[0]['linha'],response[0]['hora_partida']) if response else i+'\n'+"Não existem fretados dentro de uma hora para ir "
+            aux = '***{}***'.format(i) + "\nLinha: {}, Horário_partida: {}\n\n".format(response[0]['linha'],response[0]['hora_partida']) if response else '***{}***'.format(i)+'\n'+"Não existem fretados dentro de uma hora para essa opção.\n\n"
             saida += aux
         return saida.replace('_',' ')
 
