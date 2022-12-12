@@ -234,13 +234,14 @@ def setRA_byID(message,ID):
 
 def get_materias(message):
     ra = extract_ra(message)
-    dia_semana = extract_dia_semana(message)
+    #dia_semana = extract_dia_semana(message)
+    dia_semana = re.findall('segunda|terça|quarta|quinta|sexta|sabado', message)
     tempo = extract_tempo(message)
     if ra:
         # turmas_model.next_aula(horario,dia) #horario do dateTime
         # turmas_model.now_aula(horario,dia)
-        if dia_semana:
-            return turmas_model.find_turmas_by_ra(ra,dia_semana)
+        if dia_semana != []:
+            return turmas_model.find_turmas_by_ra(ra,dia_semana[0])
         # if tempo:
         #     if tempo == 'agora':
         #         return turmas_model.now_aula(ra,tempo)
