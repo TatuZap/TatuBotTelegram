@@ -235,24 +235,26 @@ def setRA_byID(message,ID):
 def get_materias(message):
     ra = extract_ra(message)
     #dia_semana = extract_dia_semana(message)
-    dia_semana = re.findall('segunda|terça|quarta|quinta|sexta|sabado', message)
+    dia_semana = re.findall('segunda|terça|quarta|quinta|sexta|sabado', message) #!FIXME
     tempo = extract_tempo(message)
     if ra:
-        # turmas_model.next_aula(horario,dia) #horario do dateTime
-        # turmas_model.now_aula(horario,dia)
         if dia_semana != []:
             return turmas_model.find_turmas_by_ra(ra,dia_semana[0])
-        # if tempo:
-        #     if tempo == 'agora':
-        #         return turmas_model.now_aula(ra,tempo)
+        if tempo:
+            if tempo == 'agora':
+              myList = [8,10,19,21]
+              hora = datetime.now().hour
+              proximo = min(myList, key=lambda x:abs(x-hora))
+              dia = convert_num_dia(datetime.now().weekday())
+              return turmas_model.find_turmas_by_ra(ra,dia,str(proximo))
         #     if tempo == 'proxima':
         #         return turmas_model.next_aula(ra,tempo)
-        #     if tempo == 'hoje':
-        #         hoje = datetime.now().weekday()
-        #         return turmas_model.get_materias(ra,hoje)
-        #     if tempo == 'amanha':
-        #         amh = datetime.now().weekday()+1
-        #         return turmas_model.get_materias(ra,amh)
+            if tempo == 'hoje':
+                hoje = datetime.now().weekday()
+                return turmas_model.find_turmas_by_ra(ra,convert_num_dia(hoje))
+            if tempo == 'amanha':
+                amh = datetime.now().weekday()+1
+                return turmas_model.find_turmas_by_ra(ra,convert_num_dia(amh))
 
         else:
             return turmas_model.find_turmas_by_ra(ra)
@@ -265,21 +267,37 @@ def extract_ra(message):
     return message_utils.is_ra(message)
 
 def extract_dia_semana(message):
+    '''
+    essa função extrai da mensagem o dia da semana (segunda, etc) e transforma no int correspondente
+    '''
     a = re.findall('segunda|terça|quarta|quinta|sexta|sabado', message)
     return convert_dia(a[0]) if a != [] else None
 
 def extract_tempo(message):
+    '''
+    essa função extrai da mensagem o tempo (agora,hoje,proxima) e retorna a primeira ocorrência
+    '''
     a = re.findall('agora|proxima|hoje|amanha', message)
-    return a
-
+    return a[0] if a != [] else None
 
 
 def convert_dia(message):
+    '''
+    essa função converte dias da semana em inteiros correspontes
+    '''
     lista = list(enumerate(["segunda","terça","quarta","quinta","sexta","sabado"]))
     for i in lista:
         if i[1] == message:
             return i[0]
     return -1
+
+def convert_num_dia(num):
+    '''
+    essa função converte o inteiro (no formato datetime) para o dia da semana correspondente
+    '''
+    lista = ["segunda","terça","quarta","quinta","sexta","sabado","domingo"]
+    dia = lista[num]
+    return dia if dia else None
 
 def extract_origem_destino(message):
     """
@@ -462,9 +480,9 @@ database = {
 
 print("filling database")
 database = gerador.fill_database(database,300)
-fretados_model.populate_database()
-catalogo_model.populate_database()
-restaurante_model.populate_database()
+#fretados_model.populate_database()
+#catalogo_model.populate_database()
+#restaurante_model.populate_database()
 # demo da funcionalide da classe utils para mensagem
 message_utils = MessageUtils()
 print("processing database data")
