@@ -130,3 +130,9 @@ dmypy.json
 
 modelbot/
 .handler-saves/
+
+# gerados pelo programa
+turmas_ingressantes.pdf
+turmas_pos_ajuste.pdf
+turmas_pos_reajuste.pdf
+TURMAS_SALAS.xlsx
