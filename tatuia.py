@@ -305,7 +305,7 @@ def get_fretado(message):
         return saida.replace('_',' ')
     response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
 
-    return ("{}Linha: {}, Horario_partida: {}".format(explicacao,response[0]['linha'],response[0]['hora_partida'])).replace('_',' ') if response else None
+    return ("Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida'])).replace('_',' ') if response else None
 
 
 def extract_nome_disciplina(message):
