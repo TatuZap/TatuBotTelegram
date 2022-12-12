@@ -74,7 +74,7 @@ def _get_collection_RA_TURMAS():
     except Exception as e:
         raise e
 
-def find_turmas_by_ra(ra : str, dia_semana=None) -> list:
+def find_turmas_by_ra(ra : str, dia_semana=None,horario=None) -> list:
     try:
         response = list(_get_collection_RA_TURMAS().find({"RA":ra}))
         lista_disciplinas = []
@@ -86,7 +86,12 @@ def find_turmas_by_ra(ra : str, dia_semana=None) -> list:
             disciplina["horário_teoria"] = materia["teoria"]
             lista_disciplinas.append(disciplina)
         if dia_semana:
-            lista_disciplinas = [ disciplina for disciplina in lista_disciplinas if dia_semana in str(disciplina["horário_pratica"]) or dia_semana in str(disciplina["horário_teoria"]) ]
+            if horario:
+                lista_disciplinas = [ disciplina for disciplina in lista_disciplinas
+                if (horario in str(disciplina["horário_pratica"])) and (dia_semana in str(disciplina["horário_pratica"]))
+                or (horario in str(disciplina["horário_teoria"])) and dia_semana in str(disciplina["horário_teoria"])]
+            else:
+                lista_disciplinas = [ disciplina for disciplina in lista_disciplinas if dia_semana in str(disciplina["horário_pratica"]) or dia_semana in str(disciplina["horário_teoria"]) ]
         return lista_disciplinas
     except Exception as e:
         raise e
