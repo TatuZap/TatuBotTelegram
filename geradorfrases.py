@@ -70,9 +70,9 @@ def fill_database(database, n):
                 else: i = i-1
 
         if intent["tag"] == 'contadorferias':
-            list_cont1 = ['quanto','qual','quando é']
-            list_cont2 = ['falta para', 'o fim','que acaba','que vai finalizar','falta pro fim','que termina o']
-            list_cont3 = ['do quadrimestre','do quadri','das aulas','do periodo letivo','o quadrimestre','o quadri','as aulas','o periodo letivo']
+            list_cont1 = ['quanto','qual','quando é']+[""]*3
+            list_cont2 = ['falta para', 'o fim','que acaba','que vai finalizar','falta pro fim','que termina o']+[""]*5
+            list_cont3 = ['do quadrimestre','do quadri','das aulas','do periodo letivo','o quadrimestre','o quadri','as aulas','o periodo letivo','quadrimestre']
             for i in range(n):
                 a = random.choice(list_cont1)+' '+random.choice(list_cont2)+' '+random.choice(list_cont3)
                 if a != "  ":

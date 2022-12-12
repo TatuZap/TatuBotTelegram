@@ -460,7 +460,7 @@ database = {
 
 
 print("filling database")
-database = gerador.fill_database(database,100)
+database = gerador.fill_database(database,300)
 fretados_model.populate_database()
 catalogo_model.populate_database()
 restaurante_model.populate_database()
