@@ -291,19 +291,22 @@ def get_fretado(message):
     Retorna o próximo fretado (formatado para uma String 'Linha e Horário de Partida') para origem, destino, horário atual,horário limite (+1h) e dia da semana.
     """
     user_localtime = extract_origem_destino(message)
+    explicacao = 'Essa são as linhas de fretado disponíveis para o horário:\n\n'
     if not user_localtime :
         possibilides = ["DE SA PARA SBC:", "DE SBC PARA SA:", "DE SBC PARA SBC:", "DE TERMINAL SBC PARA SBC:","DE SBC PARA TERMINAL SBC:",'DE SA PRO TERMINAL']
-        saida = ""
+        saida = explicacao
 
         for i in possibilides:
             user_localtime = extract_origem_destino(i)
-            response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
-            aux = '***{}***'.format(i) + "\nLinha: {}, Horário_partida: {}\n\n".format(response[0]['linha'],response[0]['hora_partida']) if response else '***{}***'.format(i)+'\n'+"Não existem fretados dentro de uma hora para essa opção.\n\n"
-            saida += aux
+            if user_localtime:
+                response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
+                aux = '***{}***'.format(i) + "\nLinha: {}, Horário_partida: {}\n\n".format(response[0]['linha'],response[0]['hora_partida']) if response else '***{}***'.format(i)+'\n'+"Não existem fretados dentro de uma hora para essa opção.\n\n"
+                saida += aux
         return saida.replace('_',' ')
-
     response = list(fretados_model.next_bus(user_localtime[0], user_localtime[1], user_localtime[2],user_localtime[3],user_localtime[4]))
-    return ("Linha: {}, Horario_partida: {}".format(response[0]['linha'],response[0]['hora_partida'])).replace('_',' ') if response else None
+
+    return ("{}Linha: {}, Horario_partida: {}".format(explicacao,response[0]['linha'],response[0]['hora_partida'])).replace('_',' ') if response else None
+
 
 def extract_nome_disciplina(message):
     """
@@ -383,7 +386,7 @@ def get_ru(message):
             print('vazio')
             return saida['sobremesas'].split('ru são bernardo fechado.')[0]+'\nru são bernardo fechado.'+saida['sobremesas'].split('ru são bernardo fechado.')[1]
         jantar = re.findall(r"jantar|janta|noite", message)
-        almoço = re.findall(r"almoço|manha", message)
+        almoço = re.findall(r"almoco|manha", message)
         if jantar:
             resposta = "***Jantar*** {}\n\n***Salada***\n{}\n\n***Sobremesa***\n{}".format(split_pratoprincipal_opcao(saida['jantar']),saida['saladas'][1:],saida['sobremesas'][1:])
         elif almoço:

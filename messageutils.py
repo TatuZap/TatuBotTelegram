@@ -183,12 +183,17 @@ class MessageUtils:
         lista = [] # Origem, Destino, Horario atual ,Horario atual + 1 hora (limite), Dia da semana (0-6)
 
         origem = 'SA' if re.findall(r'(de.)(sa\b|sta|santo andre)', message) else 'SA' if re.findall('(sa|sta|santo andre).(para|pra)', message) else 'TERMINAL-SBC' if re.findall(r'(terminal|estacao).(sbc|sao bernardo).(para|pra)',message) else 'SBC' if re.findall(r'de.(sbc|sao bernardo).', message) else 'SBC' if re.findall(r'(sbc|sao bernardo).(para|pra).', message) else None
+        now = datetime.now()
+        time20h = now.replace(hour=20, minute=0, second=0, microsecond=0)
+        if now > time20h:
+            destino = 'SA' if re.findall(r'(para|pra).(sa\b|sta|santo andre)', message) else 'TERMINAL-SBC' if re.findall(r'(para|pra).(terminal|estacao).(sbc|sao bernardo)',message) else 'SBC' if re.findall(r'(para|pra).(sbc|sao bernardo)', message) else 'SBC' if re.findall(r'(para|pra|pro).(terminal|terminal leste|terminal celso daniel|estação)', message) else None
+        else:
+            destino = 'SA' if re.findall(r'(para|pra).(sa\b|sta|santo andre)', message) else 'TERMINAL-SBC' if re.findall(r'(para|pra).(terminal|estacao).(sbc|sao bernardo)',message) else 'SBC' if re.findall(r'(para|pra).(sbc|sao bernardo)', message) else None
 
-        destino = 'SA' if re.findall(r'(para|pra).(sa\b|sta|santo andre)', message) else 'TERMINAL-SBC' if re.findall(r'(para|pra).(terminal|estacao).(sbc|sao bernardo)',message) else 'SBC' if re.findall(r'(para|pra).(sbc|sao bernardo)', message) else 'SBC' if re.findall(r'(para|pra|pro).(terminal|terminal leste|terminal celso daniel|estação)', message) else None
 
         if origem and destino :
             now = datetime.now()
-            limite = now  + timedelta(hours=1)
+            limite = now  + timedelta(hours=2)
             current_time = now.strftime("%H:%M")
             limite_time = limite.strftime("%H:%M")
             lista.append(origem)
