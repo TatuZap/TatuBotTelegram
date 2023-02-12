@@ -480,9 +480,10 @@ database = {
 
 print("filling database")
 database = gerador.fill_database(database,300)
-#fretados_model.populate_database()
+fretados_model.populate_database()
 #catalogo_model.populate_database()
-#restaurante_model.populate_database()
+restaurante_model.populate_database()
+#turmas_model.populate_database()
 # demo da funcionalide da classe utils para mensagem
 message_utils = MessageUtils()
 print("processing database data")

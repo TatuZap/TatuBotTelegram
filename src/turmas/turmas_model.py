@@ -49,13 +49,13 @@ def populate_database():
     turmas_dicts = parsed_dataframe.to_dict('records')
     insert_items_SALAS_HORARIOS(turmas_dicts)
 
-    parsed_dataframe = turmas_ingressantes_raspador.clean_turmas_ingressantes_df(turmas_ingressantes_raspador.df)
-    turmas_dicts = parsed_dataframe.to_dict('records')
-    insert_items_RA_TURMAS(turmas_dicts)
+    # parsed_dataframe = turmas_ingressantes_raspador.clean_turmas_ingressantes_df(turmas_ingressantes_raspador.df)
+    # turmas_dicts = parsed_dataframe.to_dict('records')
+    # insert_items_RA_TURMAS(turmas_dicts)
 
-    parsed_dataframe = turmas_pos_ajuste.clean_turmas_pos_ajuste_df(turmas_pos_ajuste.df)
-    turmas_dicts = parsed_dataframe.to_dict('records')
-    insert_items_RA_TURMAS(turmas_dicts)
+    # parsed_dataframe = turmas_pos_ajuste.clean_turmas_pos_ajuste_df(turmas_pos_ajuste.df)
+    # turmas_dicts = parsed_dataframe.to_dict('records')
+    # insert_items_RA_TURMAS(turmas_dicts)
 
     parsed_dataframe = turmas_pos_reajuste_raspador.clean_turmas_pos_ajuste_df(turmas_pos_reajuste_raspador.df)
     turmas_dicts = parsed_dataframe.to_dict('records')
